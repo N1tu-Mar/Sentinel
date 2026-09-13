@@ -7,3 +7,4 @@
 13:23 ET — docs: README, reliability brief, demo script, arga guide; ui fixes
 13:39 ET — feat: align with research data contract and fixtures
 13:53 ET — feat: Lemma tracing verified with smoke trace; Vercel project linked and deployed
+14:08 ET — eval: Kill Check #1 failed on Stripe twin; Stripe falls back to test mode
