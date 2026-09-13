@@ -67,7 +67,7 @@ export function SandboxView() {
       {!snap ? (
         <p className="mt-8 text-sm text-muted">Loading…</p>
       ) : (
-        <div className="mt-6 grid gap-8 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8 [overflow-wrap:anywhere] lg:grid-cols-3">
           <section aria-labelledby="sf-h" className="space-y-3">
             <h2 id="sf-h" className="text-sm font-semibold">
               Salesforce <span className="num font-normal text-muted">{snap.salesforce.contacts.length} contacts · {snap.salesforce.cases.length} cases</span>

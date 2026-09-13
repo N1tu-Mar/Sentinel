@@ -141,7 +141,7 @@ export function CaseView({ id }: { id: string }) {
         )}
       </header>
 
-      <main className="mx-auto grid max-w-[1400px] gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
+      <main className="mx-auto grid max-w-[1400px] grid-cols-[minmax(0,1fr)] gap-8 px-4 py-6 [overflow-wrap:anywhere] sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
         <section aria-labelledby="evidence-h">
           <h2 id="evidence-h" className="text-sm font-semibold">
             Evidence <span className="num font-normal text-muted">{c.evidence.length}</span>
@@ -398,7 +398,7 @@ function Timeline({ events, animateFrom }: { events: TimelineEvent[]; animateFro
             );
           case "tool_result":
             return (
-              <li key={it.i} className={`pl-[6.75rem] font-mono text-xs ${e.ok ? "text-muted" : "text-red"}`}>
+              <li key={it.i} className={`line-clamp-3 break-all pl-4 font-mono text-xs sm:pl-[6.75rem] ${e.ok ? "text-muted" : "text-red"}`}>
                 {e.summary}
               </li>
             );
