@@ -10,3 +10,4 @@
 14:08 ET — eval: Kill Check #1 failed on Stripe twin; Stripe falls back to test mode
 14:14 ET — feat: free-plan split twin provisioning; live path probe
 14:25 ET — eval: scenario 07 ran live (Stripe test mode + twins); dropped submit recovered and verified; Arga free quota exhausted
+15:03 ET — feat: local sandbox; scenario 07 passes end to end (Stripe test mode + sandbox)
