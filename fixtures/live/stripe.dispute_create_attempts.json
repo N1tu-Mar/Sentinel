@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-13T18:08:15.273Z",
+  "out": {
+    "POST /v1/charges/{ch}/dispute": {
+      "status": 200,
+      "body": "{\"id\":\"dis_erT8Jwv8TLFWw68TElgZoztc\",\"object\":\"dispute\",\"created\":1767225600,\"livemode\":false,\"metadata\":{},\"reason\":\"product_not_received\",\"amount\":\"9600\"}"
+    },
+    "POST /v1/disputes": {
+      "status": 405,
+      "body": "{\"detail\":\"Method Not Allowed\"}"
+    },
+    "GET /v1/charges/{ch}/dispute": {
+      "status": 200,
+      "body": "{\"object\":\"list\",\"url\":\"/v1/charges/ch_M9E3LGGzQYdpdmT3ekefdNB0/dispute\",\"has_more\":false,\"data\":[{\"id\":\"dis_erT8Jwv8TLFWw68TElgZoztc\",\"object\":\"dispute\",\"created\":1767225600,\"livemode\":false,\"metadata\":{},\"reason\":\"product_not_received\",\"amount\":\"9600\"}]}"
+    }
+  },
+  "disputes": []
+}

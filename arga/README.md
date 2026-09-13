@@ -37,7 +37,16 @@ The eight scenarios are the research fixtures in `fixtures/scenarios/` (regenera
   each scenario's dispute by customer email instead of seeding. Arga maps prompts loosely, so assertions check
   relationships and fixture facts, not fixture ids.
 
-How the Stripe twin creates disputes is undocumented (Kill Check #1). The seeder tries, per reason,
+**Kill Check #1 result (2026-09-13, live Stripe twin, Free plan, evidence in `fixtures/live/`):** the Stripe twin does
+not produce disputes through any public path we could find. Charges with `pm_card_createDisputeProductNotReceived`,
+`pm_card_createDispute`, `pm_card_createDisputeInquiry`, `4000000000002685` and `4000000000000259` all succeed with no
+dispute; provisioning with the eight scenario prompts seeds the customers but no charges or disputes; `POST /_twin/seed`
+only creates a product, price and webhook; `POST /v1/charges/{charge}/dispute` returns a status-less `dis_…` stub that
+never appears in `GET /v1/disputes`. The twin's OpenAPI is saved as `fixtures/live/stripe-twin.openapi.json`
+(`npx tsx scripts/stripe-twin-probe.ts` reruns the probe). Per the brief, the Stripe adapter falls back to **real Stripe
+test mode** (leave `STRIPE_API_BASE_URL` empty, use an `sk_test_…` key); Gmail, Slack and Salesforce stay on twins.
+
+Background: how the Stripe twin creates disputes is undocumented. The seeder tries, per reason,
 `pm_card_createDisputeProductNotReceived` / `pm_card_createDispute`, then the raw test cards `4000000000002685` /
 `4000000000000259`, and records which one produced a dispute in its notes. If none do, point only the Stripe variables at
 real Stripe test mode; nothing else changes.
