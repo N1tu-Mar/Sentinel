@@ -42,23 +42,29 @@ export async function query<T>(soql: string): Promise<T[]> {
   return res.records;
 }
 
+/** The twin's SOQL rejects Contact.Description (not in describe) but stores and returns it on the record, so read it by id. */
 export async function findContactByEmail(email: string): Promise<SfContact | null> {
-  const rows = await query<SfContact>(`SELECT Id, Name, Email, Description, CreatedDate FROM Contact WHERE Email = ${q(email)} LIMIT 1`);
-  return rows[0] ?? null;
+  const rows = await query<{ Id: string }>(`SELECT Id, Name, Email FROM Contact WHERE Email = ${q(email)} LIMIT 1`);
+  return rows[0] ? getContact(rows[0].Id) : null;
 }
 
 export const getContact = (id: string) => sf<SfContact>(`/sobjects/Contact/${id}`);
 export const getCase = (id: string) => sf<SfCase>(`/sobjects/Case/${id}`);
 
-export const listCasesForContact = (contactId: string, days = 180) =>
-  query<SfCase>(
-    `SELECT Id, CaseNumber, Subject, Description, Status, Type, CreatedDate FROM Case WHERE ContactId = ${q(contactId)} AND CreatedDate = LAST_N_DAYS:${days} ORDER BY CreatedDate DESC`,
-  );
+// Case on the twin has no Type field; the 180-day window is applied here rather than with LAST_N_DAYS.
+export async function listCasesForContact(contactId: string, days = 180): Promise<SfCase[]> {
+  const rows = await query<SfCase>(`SELECT Id, CaseNumber, Subject, Description, Status, CreatedDate FROM Case WHERE ContactId = ${q(contactId)}`);
+  const since = Date.now() - days * 86400_000;
+  return rows
+    .filter((r) => !r.CreatedDate || Date.parse(r.CreatedDate) >= since)
+    .sort((a, b) => Date.parse(b.CreatedDate ?? "") - Date.parse(a.CreatedDate ?? ""));
+}
 
 export const findCases = (contactId: string, subject: string) =>
   query<SfCase>(`SELECT Id, Subject, Description FROM Case WHERE ContactId = ${q(contactId)} AND Subject = ${q(subject)}`);
 
 // Status/Origin picklists are unverified on the twin, so only standard free fields + Priority are sent.
+// (The twin's describe says Case.Description is textarea:255, but it stores longer text; verified in fixtures/live.)
 export const createCase = (c: { contactId: string; subject: string; description: string; priority?: string }) =>
   sf<{ id: string }>(`/sobjects/Case`, {
     method: "POST",

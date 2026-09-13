@@ -61,9 +61,10 @@ export function stripQuoted(text: string): string {
 
 export function decodeMessage(m: RawMessage): GmailMessage {
   const h = (name: string) => m.payload.headers?.find((x) => x.name.toLowerCase() === name)?.value ?? "";
+  // Prefer the Date header: the Gmail twin stamps inserted mail with its own clock (2026-01-01) in internalDate.
   const ms = Number(m.internalDate);
   const headerDate = new Date(h("date"));
-  const date = ms > 0 ? new Date(ms).toISOString() : Number.isNaN(headerDate.getTime()) ? "" : headerDate.toISOString();
+  const date = !Number.isNaN(headerDate.getTime()) ? headerDate.toISOString() : ms > 0 ? new Date(ms).toISOString() : "";
   return { id: m.id, threadId: m.threadId, from: h("from"), to: h("to"), subject: h("subject"), date, text: stripQuoted(textOf(m.payload) || m.snippet || "") };
 }
 

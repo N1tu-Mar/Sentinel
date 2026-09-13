@@ -12,7 +12,9 @@ export function stripe(): Stripe {
     host: u?.hostname,
     port: u ? u.port || (u.protocol === "https:" ? 443 : 80) : undefined,
     protocol: u ? (u.protocol.replace(":", "") as "http" | "https") : undefined,
-    maxNetworkRetries: 0,
+    // The SDK retries 409/429 lock_timeout and network errors when Stripe says Stripe-Should-Retry, adding its own
+    // idempotency key to POSTs (our action writes pass explicit keys). 5xx retries also happen in loggedFetch.
+    maxNetworkRetries: 2,
     httpClient: Stripe.createFetchHttpClient((input, init) => loggedFetch("stripe", input, init)),
   });
   return client;

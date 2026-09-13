@@ -66,6 +66,8 @@ function memoryStore(): Store {
 
 let store: Store | undefined;
 export function getStore(): Store {
-  const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = process.env;
+  // Vercel Marketplace Upstash exposes KV_REST_API_URL / KV_REST_API_TOKEN.
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   return (store ??= url && token ? redisStore(new Redis({ url, token })) : memoryStore());
 }

@@ -1,0 +1,80 @@
+<claude-code-hint v="1" type="plugin" value="stripe@claude-plugins-official" />
+seeded scenario-07: du_1UFI3GQPCXViHoJukpB3jp8r [ 'dispute via pm_card_createDisputeProductNotReceived' ]
+18:23:00 status {"type":"status","status":"running","t":1789323780153}
+18:23:01 → stripe_get_dispute {}
+18:23:01 → stripe_get_charge_and_customer {}
+18:23:02   · stripe GET /v1/charges/ch_3UFI3EQPCXViHoJu08g0FY5j 200 102ms
+18:23:02   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 139ms
+18:23:02 ← stripe_get_dispute: {"id":"du_1UFI3GQPCXViHoJukpB3jp8r","status":"needs_response","reason":"product_not_received","amount":9600,"currency":"usd","charge":"ch_3UFI3EQPCXViHoJu08g0FY5j","created":"2026-09-13T18:22:54.000Z","due_by":"2026-09-21T23:59:59.000Z","pa
+18:23:02   · stripe GET /v1/customers/cus_VFneXn3bHfvyJU 200 108ms
+18:23:02 ← stripe_get_charge_and_customer: {"charge":{"id":"ch_3UFI3EQPCXViHoJu08g0FY5j","amount":9600,"currency":"usd","created":"2026-09-13T18:22:52.000Z","description":"Order JP-10407: Insulated water bottle set","refunded":false,"amount_refunded":0,"receipt_email":"alex.rivera+m
+18:23:04 … Status is needs_response, not past_due, due_by in future - gate 1 passes. Now checking customer history, Salesforce, and Gmail for delivery/communication evidence.
+18:23:04 → stripe_customer_history {"days":90}
+18:23:04 → salesforce_lookup_customer {"email":"alex.rivera+mu0569vt@example.com"}
+18:23:04 → gmail_search_threads {"email":"alex.rivera+mu0569vt@example.com"}
+18:23:04   · stripe GET /v1/refunds 200 72ms
+18:23:04   · stripe GET /v1/subscriptions 200 123ms
+18:23:04   · stripe GET /v1/charges 200 175ms
+18:23:04   · salesforce GET /services/data/v60.0/query 400 172ms
+18:23:04 ✗ salesforce_lookup_customer: salesforce 400: [{"message":"No such column 'Description' on entity 'Contact'.","errorCode":"INVALID_FIELD","fields":["Description"]}]
+18:23:05   · stripe GET /v1/disputes 200 238ms
+18:23:05 ← stripe_customer_history: {"window_days":90,"other_disputes":{"count":0,"items":[]},"refunds_on_disputed_charge":[],"charges":[{"id":"ch_3UFI3EQPCXViHoJu08g0FY5j","amount":9600,"description":"Order JP-10407: Insulated water bottle set","created":"2026-09-13T18:22:52
+18:23:05   · gmail GET /gmail/v1/users/me/threads 200 420ms
+18:23:05   · gmail GET /gmail/v1/users/me/threads/e8f28e75ab775c49 200 177ms
+18:23:05 ← gmail_search_threads: {"count":1,"threads":[{"threadId":"e8f28e75ab775c49","messages":[{"id":"e8f28e75ab775c49","threadId":"e8f28e75ab775c49","from":"Juniper & Pine Outfitters <support@juniperpine.example>","to":"Alex Rivera <alex.rivera+mu0569vt@example.com>","
+18:23:12 … Salesforce lookup errored (no data available from that system), but Gmail provided a direct customer email confirming delivery/receipt. That satisfies gate 3 for FIGHT. No other disputes in 90 days, so no FIGHT_AND_FLAG needed.
+18:23:12 → record_evidence {"source":"gmail","kind":"customer_communication","summary":"Customer Alex Rivera replied 2026-01-01 confirming: 'The Insulated water bottle set arrived today a
+18:23:12 → record_evidence {"source":"gmail","kind":"delivery_proof","summary":"Merchant shipping notification 2026-01-01 to Alex Rivera: Order JP-10407 shipped via UPS tracking 1Z999AA10
+18:23:12 → record_evidence {"source":"stripe","kind":"dispute_history","summary":"No other disputes on this customer in the last 90 days (count 0).","strength":"moderate","ref":"du_1UFI3G
+18:23:13 ◆ evidence ev_1 [gmail/customer_communication] Customer Alex Rivera replied 2026-01-01 confirming: 'The Insulated water bottle set arrived today and fits great.' Directly contradicts product_not_received claim.
+18:23:13 ◆ evidence ev_2 [gmail/delivery_proof] Merchant shipping notification 2026-01-01 to Alex Rivera: Order JP-10407 shipped via UPS tracking 1Z999AA10123450778, matching charge shipping details.
+18:23:13 ◆ evidence ev_3 [stripe/dispute_history] No other disputes on this customer in the last 90 days (count 0).
+18:23:13 ← record_evidence: {"ok":true,"id":"ev_1"}
+18:23:13 ← record_evidence: {"ok":true,"id":"ev_2"}
+18:23:13 ← record_evidence: {"ok":true,"id":"ev_3"}
+18:23:16 → record_decision {"branch":"FIGHT","confidence":0.95,"rationale":"Dispute reason is product_not_received, but the customer's own email dated 2026-01-01 confirms the order arrive
+18:23:16 ■ DECISION FIGHT (0.95) Dispute reason is product_not_received, but the customer's own email dated 2026-01-01 confirms the order arrived and fits well, directly contradicting the claim. Merchant shipping notification with UPS tracking matches the shipping address on the charge. No other disputes in the last 90 days, so FIGHT_AND_FLAG is not warranted.
+18:23:16 ← record_decision: {"ok":true,"requiresApproval":false}
+18:23:21 → stripe_submit_evidence {"rebuttal":"The dispute claims the product was not received, but this is contradicted by the customer's own email and the shipment record.\n\nTimeline:\n- 2026
+18:23:22   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 232ms
+18:23:22 ▶ stripe.submit_evidence attempt 1 key=sentinel:du_1UFI3GQPCXViHoJukpB3jp8r:submit_evidence:1
+18:23:22 chaos {"type":"chaos","mode":"drop_submit_once","text":"Injected failure: evidence sent without submit=true (saved as draft, HTTP 200)","t":1789323802154}
+18:23:22   · stripe POST /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 245ms
+18:23:23   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 267ms
+18:23:24   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 174ms
+18:23:25   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 139ms
+18:23:25 ✗ verify stripe.submit_evidence: expected status under_review, submission_count = 1, evidence populated; observed dispute status = needs_response, submission_count = 0, evidence populated
+18:23:25 ← stripe_submit_evidence: dispute status = needs_response, submission_count = 0, evidence populated, expected status under_review, submission_count = 1, evidence populated
+18:23:30 … Verification shows submission_count did not advance to 1 as expected — likely a submission failure or timing issue. Retrying once per protocol.
+18:23:30 → stripe_submit_evidence {"rebuttal":"The dispute claims the product was not received, but this is contradicted by the customer's own email and the shipment record.\n\nTimeline:\n- 2026
+18:23:30   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 260ms
+18:23:30   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 213ms
+18:23:30 recovery {"type":"recovery","text":"Retrying stripe.submit_evidence with a new idempotency key sentinel:du_1UFI3GQPCXViHoJukpB3jp8r:submit_evidence:2","t":1789323810979}
+18:23:31 ▶ stripe.submit_evidence attempt 2 key=sentinel:du_1UFI3GQPCXViHoJukpB3jp8r:submit_evidence:2
+18:23:31   · stripe POST /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 442ms
+18:23:32   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 159ms
+18:23:32 ✓ verify stripe.submit_evidence: expected status under_review, submission_count = 1, evidence populated; observed dispute status = under_review, submission_count = 1, evidence populated
+18:23:32 ← stripe_submit_evidence: dispute status = under_review, submission_count = 1, evidence populated
+18:23:35 … Evidence submission verified: status is now under_review with submission_count = 1. Posting the final summary to Slack.
+18:23:35 → slack_post_summary {"channel":"disputes","text":"Dispute du_1UFI3GQPCXViHoJukpB3jp8r (charge ch_3UFI3EQPCXViHoJu08g0FY5j, $96.00, reason: product_not_received) — FIGHT. Customer A
+18:23:35   · slack POST /api/conversations.history 200 337ms
+18:23:35 ▶ slack.post attempt 1 key=sentinel:du_1UFI3GQPCXViHoJukpB3jp8r:post:disputes:1
+18:23:36   · slack POST /api/chat.postMessage 200 290ms
+18:23:36   · slack POST /api/conversations.history 200 285ms
+18:23:36   · slack POST /api/conversations.history 200 168ms
+18:23:36 ✓ verify slack.post (disputes): expected exactly 1 message for dispute du_1UFI3GQPCXViHoJukpB3jp8r in #disputes; observed 1 message(s) for dispute du_1UFI3GQPCXViHoJukpB3jp8r in #disputes, ts 1789323816.058382 read back
+18:23:37 ← slack_post_summary: 1 message(s) for dispute du_1UFI3GQPCXViHoJukpB3jp8r in #disputes, ts 1789323816.058382 read back
+18:23:40 … Summary: Investigated dispute du_1UFI3GQPCXViHoJukpB3jp8r ($96.00, product_not_received) — Stripe showed a clean charge with matching shipping details, Salesforce lookup errored with no data, but Gmail revealed the customer's own reply confirming the item "arrived today and fits great," directly contradicting the claim, alongside the merchant's shipping notification with matching UPS tracking. With no other disputes in the past 90 days, I recorded a FIGHT decision and submitted evidence citing the delivery/shipping match and the customer's verbatim confirmation; the first submission attempt didn't verify, but the retry succeeded with status moving to under_review (submission_count=1), and I posted the outcome to #disputes.
+18:23:41   · stripe GET /v1/disputes/du_1UFI3GQPCXViHoJukpB3jp8r 200 204ms
+18:23:41   · stripe GET /v1/subscriptions 200 192ms
+18:23:41   · slack POST /api/conversations.history 200 301ms
+18:23:41   · salesforce GET /services/data/v60.0/query 400 323ms
+18:23:41 error {"type":"error","text":"Final verification could not run: salesforce 400: [{\"message\":\"No such column 'Description' on entity 'Contact'.\",\"errorCode\":\"INVALID_FIELD\",\"fields\":[\"Description\
+18:23:41 status {"type":"status","status":"needs_attention","t":1789323821747}
+18:23:41   · slack POST /api/conversations.history 200 432ms
+
+status: needs_attention | branch: FIGHT | provider calls: 28 | forbidden: 0
+✗ [sentinel] Final verification ran: expected yes, observed salesforce 400: [{"message":"No such column 'Description' on entity 'Contact'.","errorCode":"INVALID_FIELD","fields":["Description"]}]
+
+Summary: Investigated dispute du_1UFI3GQPCXViHoJukpB3jp8r ($96.00, product_not_received) — Stripe showed a clean charge with matching shipping details, Salesforce lookup errored with no data, but Gmail revealed the customer's own reply confirming the item "arrived today and fits great," directly contradicting the claim, alongside the merchant's shipping notification with matching UPS tracking. With no other disputes in the past 90 days, I recorded a FIGHT decision and submitted evidence citing the delivery/shipping match and the customer's verbatim confirmation; the first submission attempt didn't verify, but the retry succeeded with status moving to under_review (submission_count=1), and I posted the outcome to #disputes.
+Lemma trace e7328e37-a851-446f-b364-c822a55392de

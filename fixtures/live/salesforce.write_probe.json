@@ -1,0 +1,22 @@
+{
+  "PATCH Contact Description": {
+    "status": 204,
+    "body": ""
+  },
+  "GET Contact after PATCH": {
+    "status": 200,
+    "body": "{\"FirstName\":\"Alex\",\"LastName\":\"Rivera\",\"Email\":\"alex.rivera+mu0569vt@example.com\",\"Description\":\"LTV_CENTS: 28800\\nPRIOR_DISPUTES_90D: 0\\nRISK_FLAG: friendly_fraud\",\"OwnerId\":\"005000000000001AAA\",\"Name\":\"Alex Rivera\",\"Id\":\"003000000000002AAA\",\"CreatedDate\":\"2026-09-13T18:21:44.774204Z\",\"IsDeleted\":false,\"LastModifiedDate\":\"2026-09-13T18:21:44.774204Z\",\"attributes\":{\"type\":\"Contact\",\"url\":\"/services/data/v60.0/sobjects/Contact/003000000000002AAA\"}}"
+  },
+  "SOQL LAST_N_DAYS": {
+    "status": 200,
+    "body": "{\"totalSize\":0,\"done\":true,\"records\":[]}"
+  },
+  "POST Case 300-char Description": {
+    "status": 201,
+    "body": "{\"id\":\"500000000000003AAA\",\"success\":true,\"errors\":[]}"
+  },
+  "SOQL Case by Subject": {
+    "status": 200,
+    "body": "{\"totalSize\":1,\"done\":true,\"records\":[{\"attributes\":{\"type\":\"Case\",\"url\":\"/services/data/v60.0/sobjects/Case/500000000000003AAA\"},\"Id\":\"500000000000003AAA\",\"Subject\":\"Length probe\",\"Description\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}]}"
+  }
+}
