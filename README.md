@@ -53,7 +53,7 @@ flowchart LR
 
 ## How evaluation works
 
-For each of eight scenarios (`src/domain/scenarios.ts`): reset the Arga twins → seed all four systems → ingest the dispute → run the agent (auto-approve where the scenario says) → assert against provider state read directly, not the case store. `npm run eval` writes `eval/results.json` and `eval/results.md`; the `/eval` page runs scenarios one request at a time.
+The eight scenarios are the research fixtures in `fixtures/scenarios/` (real API shapes; see `docs/research/`). For each: reset the Arga twins → seed all four systems (or find prompt-seeded data by customer email) → ingest the dispute → run the agent (approve scenario 04) → evaluate the fixture's `assertions` and `forbidden_effects` against provider state read directly, not the case store. `npm run eval` writes `eval/results.json` and `eval/results.md`; the `/eval` page runs scenarios one request at a time.
 
 Metrics: task success, decision accuracy, false-action rate, constraint-violation rate, recovery rate, state consistency, mean provider calls, mean wall time. The numbers live in `eval/results.md` after the harness runs against provisioned twins.
 
@@ -68,11 +68,12 @@ Metrics: task success, decision accuracy, false-action rate, constraint-violatio
 
 ```bash
 npm install
-cp .env.example .env.local   # Anthropic, Lemma, Arga twin and (optional) Upstash values
-npm run twins:check          # one read per system
-npm test                     # offline reliability checks
-npm run agent -- --scenario receipt_confirmed_repeat
-npm run agent -- --scenario chaos_drop_submit
+cp .env.example .env.local   # Anthropic, Lemma, (optional) Upstash values
+npm test                     # offline reliability checks against the research fixtures
+npm run provision            # 4 Arga twins → .env.twins (Team plan)
+npm run twins:check -- --capture
+npm run agent -- --scenario 01   # FIGHT on a receipt-confirmed dispute
+npm run agent -- --scenario 07   # dropped submit, caught and recovered
 npm run eval
 npm run dev
 ```

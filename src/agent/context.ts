@@ -1,3 +1,4 @@
+import type { TraceContext } from "@uselemma/tracing";
 import type { DisputeCase, TimelineEvent } from "@/domain/types";
 import type { Store } from "@/store";
 import type { Chaos } from "./chaos";
@@ -13,6 +14,8 @@ export interface RunContext {
   /** Set by request_approval: the loop must end. */
   halted: boolean;
   timing: { readbackDelayMs: number; readbackIntervalMs: number };
+  /** Lemma trace for this run: verification results and recoveries are recorded as explicit spans. */
+  trace?: Pick<TraceContext, "recordSpan">;
   emit(e: NewEvent): Promise<void>;
   save(): Promise<void>;
 }

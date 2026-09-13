@@ -47,10 +47,13 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
   await ctx.save();
 
   const lemmaOn = !!(process.env.LEMMA_API_KEY && process.env.LEMMA_PROJECT_ID);
-  const trace = new TraceContext({ id: crypto.randomUUID(), name: "sentinel", input: `dispute ${c.id}` });
-  const metadata = { caseId: c.id, disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 };
-  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel", metadata }) : undefined;
-  if (lemma) c.lemmaTraceId = trace.id;
+  const metadata = { disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 };
+  const trace = new TraceContext({ id: crypto.randomUUID(), name: "sentinel.dispute_run", input: `dispute ${c.id}`, threadId: c.id, metadata });
+  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel.dispute_run", metadata: { ...metadata, threadId: c.id } }) : undefined;
+  if (lemma) {
+    c.lemmaTraceId = trace.id;
+    ctx.trace = trace;
+  }
 
   const prompt = opts.resume
     ? [
@@ -71,7 +74,7 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
         stopWhen: [isStepCount(30), () => ctx.halted],
         telemetry: {
           isEnabled: lemmaOn,
-          functionId: "sentinel",
+          functionId: "sentinel.dispute_run",
           // Lemma types the integration against both AI SDK v6 and v7 events; runtime supports v7 (per its README).
           integrations: lemma ? [lemma as unknown as Telemetry] : undefined,
         },

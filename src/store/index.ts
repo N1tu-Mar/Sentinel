@@ -10,6 +10,8 @@ export interface Store {
   clearEvents(id: string): Promise<void>;
   putEvalResult(r: EvalResult): Promise<void>;
   getEvalResults(): Promise<EvalResult[]>;
+  /** Webhook dedupe: true the first time an event id is seen. */
+  markEvent(id: string): Promise<boolean>;
 }
 
 function redisStore(redis: Redis): Store {
@@ -38,15 +40,16 @@ function redisStore(redis: Redis): Store {
       const all = await redis.hgetall<Record<string, EvalResult>>("eval:results");
       return Object.values(all ?? {});
     },
+    markEvent: async (id) => (await redis.set(`event:${id}`, 1, { nx: true, ex: 7 * 86400 })) === "OK",
   };
 }
 
 // ponytail: in-memory store is per-process; on Vercel without Upstash, state does not survive across function instances.
 function memoryStore(): Store {
   const g = globalThis as unknown as {
-    __sentinel?: { cases: Map<string, DisputeCase>; events: Map<string, TimelineEvent[]>; evals: Map<string, EvalResult> };
+    __sentinel?: { cases: Map<string, DisputeCase>; events: Map<string, TimelineEvent[]>; evals: Map<string, EvalResult>; seen: Set<string> };
   };
-  const m = (g.__sentinel ??= { cases: new Map(), events: new Map(), evals: new Map() });
+  const m = (g.__sentinel ??= { cases: new Map(), events: new Map(), evals: new Map(), seen: new Set() });
   const clone = <T>(x: T): T => structuredClone(x);
   return {
     getCase: async (id) => (m.cases.has(id) ? clone(m.cases.get(id)!) : null),
@@ -57,6 +60,7 @@ function memoryStore(): Store {
     clearEvents: async (id) => void m.events.delete(id),
     putEvalResult: async (r) => void m.evals.set(r.scenario, clone(r)),
     getEvalResults: async () => [...m.evals.values()].map(clone),
+    markEvent: async (id) => !m.seen.has(id) && !!m.seen.add(id),
   };
 }
 

@@ -2,7 +2,7 @@ import { tool } from "ai";
 import type Stripe from "stripe";
 import { z } from "zod";
 import * as gmail from "@/adapters/gmail";
-import { HttpError } from "@/adapters/logged-fetch";
+import { HttpError, sleep } from "@/adapters/logged-fetch";
 import * as sf from "@/adapters/salesforce";
 import * as slack from "@/adapters/slack";
 import * as stripeApi from "@/adapters/stripe";
@@ -10,11 +10,24 @@ import type { ActionResult, EvidenceItem } from "@/domain/types";
 import { CHAOS_TEXT } from "./chaos";
 import type { RunContext } from "./context";
 import { errMsg, runAction } from "./idempotency";
-import { POLICY, requiresApproval } from "./policy";
-import { caseUrl, RISK_MARKER, SUBJECT } from "./verify";
+import { ACCEPTED_STATUSES, POLICY, requiresApproval, stripeWriteBlocker, SUBMITTED_STATUSES } from "./policy";
+import { caseUrl, RISK_FLAG, SUBJECT } from "./verify";
 
+const DAY = 86400_000;
 const iso = (sec: number | null | undefined) => (sec ? new Date(sec * 1000).toISOString() : null);
 export const money = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+
+const FIELD_MAX = 20_000;
+const TOTAL_MAX = 150_000;
+
+/** Stripe limits: 20,000 chars per text field, 150,000 combined. The narrative absorbs any cut. */
+export function fitEvidence(fields: Record<string, string | null | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(fields)) if (v) out[k] = v.length > FIELD_MAX ? `${v.slice(0, FIELD_MAX - 1)}…` : v;
+  const over = Object.values(out).reduce((n, v) => n + v.length, 0) - TOTAL_MAX;
+  if (over > 0 && out.uncategorized_text) out.uncategorized_text = `${out.uncategorized_text.slice(0, out.uncategorized_text.length - over - 1)}…`;
+  return out;
+}
 
 const safe =
   <I, O>(fn: (input: I) => Promise<O>) =>
@@ -26,30 +39,34 @@ const safe =
     }
   };
 
-/** Slack post through the ledger: look for this case's message first, post, read back. */
+/** Slack post through the ledger: look for this dispute's message first, post, then prove it by ts readback. */
 export function postToSlack(ctx: RunContext, kind: "disputes" | "risk" | "approvals", text: string): Promise<ActionResult> {
   const { c } = ctx;
   const channel = slack.channelName(kind);
-  const marker = `/cases/${c.id}`;
+  const body = `${text}\nDispute ${c.id}${c.customer?.email ? ` · ${c.customer.email}` : ""} · ${caseUrl(c.id)}`;
+  let posted: { channel: string; ts: string } | undefined;
   return runAction(ctx, {
     action: "slack.post",
     target: kind,
     guard: kind === "approvals" ? "request_approval" : undefined,
-    expected: `exactly 1 message for this case in #${channel}`,
+    expected: `exactly 1 message for dispute ${c.id} in #${channel}`,
     checkBeforeWrite: true,
     perform: async () => {
-      const body = `${text}\nCase: ${caseUrl(c.id)}`;
       if (ctx.chaos.fire("slack.post")) {
         await ctx.emit({ type: "chaos", mode: ctx.chaos.mode, text: CHAOS_TEXT.slack_timeout_once });
         slack.post(channel, body).catch(() => {}); // the request still goes out; we stop waiting for it
-        await new Promise((r) => setTimeout(r, 100));
+        await sleep(100);
         throw new Error("Slack chat.postMessage timed out after 100 ms (injected)");
       }
-      await slack.post(channel, body);
+      posted = await slack.post(channel, body);
     },
     verify: async () => {
-      const n = (await slack.findMessages(channel, marker)).length;
-      return { passed: n === 1, observed: `${n} message(s) for this case in #${channel}` };
+      if (posted) {
+        const r = await slack.readback(posted.channel, posted.ts);
+        if (!r.found) return { passed: false, observed: `message ts ${posted.ts} not found in #${channel}` };
+      }
+      const n = (await slack.findMessages(channel, c.id)).length;
+      return { passed: n === 1, observed: `${n} message(s) for dispute ${c.id} in #${channel}${posted ? `, ts ${posted.ts} read back` : ""}` };
     },
   });
 }
@@ -69,11 +86,17 @@ export function buildTools(ctx: RunContext) {
     const d = await stripeApi.getDispute(c.id);
     c.dispute.status = d.status;
     c.dispute.dueBy = d.evidence_details?.due_by ? d.evidence_details.due_by * 1000 : null;
+    ctx.seen.set(d.id, d);
     return d;
   }
   const liveDispute = async () => {
-    await syncDispute();
-    return { disputeStatus: c.dispute.status, dueBy: c.dispute.dueBy };
+    const d = await syncDispute();
+    return {
+      disputeStatus: d.status,
+      dueBy: c.dispute.dueBy,
+      pastDue: d.evidence_details?.past_due ?? false,
+      submissionCount: d.evidence_details?.submission_count ?? 0,
+    };
   };
 
   async function readbackDispute() {
@@ -95,7 +118,7 @@ export function buildTools(ctx: RunContext) {
       action: "salesforce.create_case",
       target,
       expected: `exactly 1 Salesforce case "${subject}"`,
-      checkBeforeWrite: true,
+      checkBeforeWrite: true, // dedupe: query Case by ContactId + Subject first
       perform: async () => {
         await sf.createCase({ contactId: id, subject, description, priority });
       },
@@ -108,33 +131,41 @@ export function buildTools(ctx: RunContext) {
 
   function buildEvidence(rebuttal: string, ids: string[]): Stripe.DisputeUpdateParams.Evidence {
     const items = c.evidence.filter((e) => ids.includes(e.id));
-    const text = (e: EvidenceItem) => {
-      const r = e.raw as { text?: string; date?: string; from?: string; Description?: string } | undefined;
-      return r?.text ? `${r.date} from ${r.from}: ${r.text}` : (r?.Description ?? e.summary);
-    };
-    const delivery = items.filter((e) => e.kind === "delivery_proof").map(text).join("\n");
-    const comms = items.filter((e) => e.source === "gmail").map(text).join("\n\n");
     const charge = ctx.seen.get(c.dispute.chargeId) as Stripe.Charge | undefined;
-    return {
-      customer_name: c.customer?.name || undefined,
-      customer_email_address: c.customer?.email || undefined,
-      product_description: charge?.description ?? undefined,
-      shipping_carrier: delivery.match(/\b(UPS|FedEx|USPS|DHL)\b/i)?.[0],
-      shipping_tracking_number: delivery.match(/\b(1Z[0-9A-Z]{16}|\d{12,22})\b/)?.[0],
-      shipping_date: delivery.match(/shipped (\d{4}-\d{2}-\d{2})/i)?.[1],
-      customer_communication: comms || undefined,
-      uncategorized_text: rebuttal,
-    };
+    const delivery = items.filter((e) => e.kind === "delivery_proof").map((e) => (e.raw as { Description?: string })?.Description ?? e.summary).join("\n");
+    const line = (key: string) => sf.descriptionLine(delivery, key);
+    const addr = (a?: Stripe.Address | null) => (a ? [a.line1, a.line2, a.city, a.state, a.postal_code, a.country].filter(Boolean).join(", ") : undefined);
+    // customer_communication is a file field, so quoted emails go into the narrative.
+    const emails = items
+      .filter((e) => e.source === "gmail")
+      .map((e) => e.raw as gmail.GmailMessage)
+      .filter((m) => m?.text)
+      .map((m) => `On ${m.date.slice(0, 10)}, ${m.from} wrote: "${m.text}"`);
+    const tracking = charge?.shipping?.tracking_number ?? line("TRACKING");
+    const records = [`dispute ${c.id}`, `charge ${c.dispute.chargeId}`, line("ORDER") && `order ${line("ORDER")}`, tracking && `tracking ${tracking}`].filter(Boolean);
+    return fitEvidence({
+      customer_name: c.customer?.name || charge?.billing_details?.name,
+      customer_email_address: c.customer?.email,
+      product_description: charge?.description ?? line("ITEM"),
+      billing_address: addr(charge?.billing_details?.address),
+      shipping_address: addr(charge?.shipping?.address),
+      shipping_carrier: charge?.shipping?.carrier ?? line("CARRIER"),
+      shipping_tracking_number: tracking,
+      shipping_date: line("SHIPPED"),
+      uncategorized_text: [rebuttal, emails.length ? `Customer communication:\n${emails.join("\n")}` : "", `Records: ${records.join(", ")}.`]
+        .filter(Boolean)
+        .join("\n\n"),
+    });
   }
 
   return {
     // ---------- read tools ----------
     stripe_get_dispute: tool({
-      description: "Read the dispute under investigation from Stripe: status, reason, amount, evidence deadline.",
+      description: "Read the dispute under investigation from Stripe: status, reason, amount, deadline, submission count.",
       inputSchema: z.object({}),
       execute: safe(async () => {
         const d = await syncDispute();
-        ctx.seen.set(d.id, d);
+        const blocked = stripeWriteBlocker({ status: d.status, dueBy: c.dispute.dueBy, pastDue: d.evidence_details?.past_due });
         return {
           id: d.id,
           status: d.status,
@@ -144,26 +175,26 @@ export function buildTools(ctx: RunContext) {
           charge: stripeApi.idOf(d.charge),
           created: iso(d.created),
           due_by: iso(d.evidence_details?.due_by),
-          is_past_due: c.dispute.dueBy !== null && c.dispute.dueBy <= Date.now(),
+          past_due: d.evidence_details?.past_due ?? false,
           submission_count: d.evidence_details?.submission_count ?? 0,
+          has_evidence: d.evidence_details?.has_evidence ?? false,
+          can_respond: blocked === null,
+          blocked_reason: blocked,
         };
       }),
     }),
 
     stripe_get_charge_and_customer: tool({
-      description: "Read the disputed charge (product description, amount, date, card) and the Stripe customer.",
+      description: "Read the disputed charge (description, amount, date, shipping, billing, card checks) and the Stripe customer.",
       inputSchema: z.object({}),
       execute: safe(async () => {
         const charge = await stripeApi.getCharge(c.dispute.chargeId);
         ctx.seen.set(charge.id, charge);
-        const customer = await stripeApi.getCustomer(c.dispute.customerId || stripeApi.idOf(charge.customer));
-        const cust = "deleted" in customer && customer.deleted ? null : (customer as Stripe.Customer);
-        c.customer = {
-          email: cust?.email ?? "",
-          name: cust?.name ?? "",
-          stripeId: customer.id,
-          sfContactId: c.customer?.sfContactId,
-        };
+        const customerId = c.dispute.customerId || stripeApi.idOf(charge.customer);
+        const customer = customerId ? await stripeApi.getCustomer(customerId) : null;
+        const cust = customer && !("deleted" in customer && customer.deleted) ? (customer as Stripe.Customer) : null;
+        const email = cust?.email || charge.billing_details?.email || charge.receipt_email || "";
+        c.customer = { email, name: cust?.name || charge.billing_details?.name || "", stripeId: customerId, sfContactId: c.customer?.sfContactId };
         await ctx.save();
         const card = charge.payment_method_details?.card;
         return {
@@ -173,55 +204,52 @@ export function buildTools(ctx: RunContext) {
             currency: charge.currency,
             created: iso(charge.created),
             description: charge.description,
-            status: charge.status,
             refunded: charge.refunded,
             amount_refunded: charge.amount_refunded,
-            card: card ? `${card.brand} ****${card.last4}` : null,
+            receipt_email: charge.receipt_email,
+            billing_details: charge.billing_details,
             shipping: charge.shipping ?? null,
+            outcome: charge.outcome ? { network_status: charge.outcome.network_status, risk_level: charge.outcome.risk_level } : null,
+            card: card ? { brand: card.brand, last4: card.last4, checks: card.checks } : null,
+            metadata: charge.metadata,
           },
-          customer: cust
-            ? { id: cust.id, email: cust.email, name: cust.name, created: iso(cust.created) }
-            : { id: customer.id, deleted: true },
+          customer: cust ? { id: cust.id, email: cust.email, name: cust.name, created: iso(cust.created) } : null,
+          customer_email: email,
         };
       }),
     }),
 
     stripe_customer_history: tool({
-      description: "The customer's prior disputes (with outcomes), charges, refunds and subscriptions in Stripe.",
+      description: "This customer's other disputes in the window (joined via charge.customer), refunds on the disputed charge, charges and subscriptions.",
       inputSchema: z.object({ days: z.number().int().positive().max(365).optional() }),
       execute: safe(async ({ days }) => {
         const window = days ?? POLICY.repeatDisputerWindowDays;
         const customerId = c.dispute.customerId;
-        const [disputes, charges, subs] = await Promise.all([
-          stripeApi.listCustomerDisputes(customerId, window),
-          stripeApi.listCustomerCharges(customerId),
-          stripeApi.listSubscriptions(customerId),
+        const [prior, refunds, charges, subs] = await Promise.all([
+          customerId ? stripeApi.listCustomerDisputes(customerId, window, c.id) : Promise.resolve([]),
+          stripeApi.listRefunds(c.dispute.chargeId),
+          customerId ? stripeApi.listCustomerCharges(customerId).then((r) => r.data) : Promise.resolve([]),
+          customerId ? stripeApi.listSubscriptions(customerId).then((r) => r.data) : Promise.resolve([]),
         ]);
-        const prior = disputes.filter((d) => d.id !== c.id);
-        for (const x of [...charges.data, ...prior, ...subs.data]) ctx.seen.set(x.id, x);
+        for (const x of [...prior, ...refunds.data, ...charges, ...subs]) ctx.seen.set(x.id, x);
         return {
           window_days: window,
-          prior_disputes: {
+          other_disputes: {
             count: prior.length,
             items: prior.map((d) => ({ id: d.id, status: d.status, reason: d.reason, amount: d.amount, created: iso(d.created) })),
           },
-          charges: charges.data.map((ch) => ({
-            id: ch.id,
-            amount: ch.amount,
-            description: ch.description,
-            created: iso(ch.created),
-            refunded: ch.refunded,
-            amount_refunded: ch.amount_refunded,
-            disputed: ch.disputed,
-          })),
-          subscriptions: subs.data.map((s) => ({ id: s.id, status: s.status, created: iso(s.created), canceled_at: iso(s.canceled_at) })),
+          refunds_on_disputed_charge: refunds.data
+            .filter((r) => r.status === "succeeded")
+            .map((r) => ({ id: r.id, amount: r.amount, created: iso(r.created), reason: r.reason })),
+          charges: charges.map((ch) => ({ id: ch.id, amount: ch.amount, description: ch.description, created: iso(ch.created), disputed: ch.disputed })),
+          subscriptions: subs.map((s) => ({ id: s.id, status: s.status, created: iso(s.created), canceled_at: iso(s.canceled_at) })),
         };
       }),
     }),
 
     salesforce_lookup_customer: tool({
       description:
-        "Find the customer's Salesforce contact by email, with their cases. Shipping/delivery notes in case descriptions are recorded as evidence automatically.",
+        "Find the customer's Salesforce contact by email (Description lines LTV_CENTS, PRIOR_DISPUTES_90D, RISK_FLAG) and their cases from the last 180 days. Delivery records (TRACKING + DELIVERED lines) are recorded as evidence automatically.",
       inputSchema: z.object({ email: z.string() }),
       execute: safe(async ({ email }) => {
         const contact = await sf.findContactByEmail(email);
@@ -238,43 +266,58 @@ export function buildTools(ctx: RunContext) {
         for (const k of cases) {
           ctx.seen.set(k.Id, k);
           const ours = k.Subject === SUBJECT.risk || /^(Evidence needed|Dispute )/.test(k.Subject ?? "");
-          const text = k.Description ?? "";
           const already = c.evidence.some((e) => (e.raw as { Id?: string })?.Id === k.Id);
-          if (!ours && !already && /deliver|shipped|tracking|signed|signature/i.test(text)) {
+          if (!ours && !already && sf.isDeliveryRecord(k.Description)) {
+            const l = (key: string) => sf.descriptionLine(k.Description, key);
             const item = await addEvidence({
               source: "salesforce",
               kind: "delivery_proof",
-              summary: `${k.Subject}: ${text}`.slice(0, 240),
+              summary: `${k.Subject}: ${l("CARRIER") ?? "carrier"} ${l("TRACKING")}, shipped ${l("SHIPPED") ?? "?"}, delivered ${l("DELIVERED")}${l("SIGNATURE") ? `, signed ${l("SIGNATURE")}` : ""}`,
               raw: k,
-              strength: /signed|signature/i.test(text) ? "strong" : "moderate",
+              strength: "strong",
             });
             recorded.push(item.id);
           }
         }
         await ctx.save();
+        const line = (key: string) => sf.descriptionLine(contact.Description, key);
         return {
           found: true,
-          contact: { id: contact.Id, name: contact.Name, email: contact.Email, description: contact.Description, created: contact.CreatedDate },
-          cases: cases.map((k) => ({ id: k.Id, subject: k.Subject, description: k.Description, status: k.Status, created: k.CreatedDate })),
+          contact: {
+            id: contact.Id,
+            name: contact.Name,
+            email: contact.Email,
+            ltv_cents: line("LTV_CENTS"),
+            prior_disputes_90d: line("PRIOR_DISPUTES_90D"),
+            risk_flag: line(RISK_FLAG.key),
+            description: contact.Description,
+          },
+          cases: cases.map((k) => ({ id: k.Id, number: k.CaseNumber, subject: k.Subject, description: k.Description, status: k.Status, created: k.CreatedDate })),
           evidence_recorded: recorded,
         };
       }),
     }),
 
-    gmail_search: tool({
+    gmail_search_threads: tool({
       description:
-        "Search the merchant mailbox with Gmail query syntax (e.g. from:x@example.com). Returns decoded messages. Call record_evidence for anything relevant, with ref = the message id.",
-      inputSchema: z.object({ query: z.string(), maxResults: z.number().int().min(1).max(10).optional() }),
-      execute: safe(async ({ query, maxResults }) => {
-        const messages = await gmail.searchMessages(query, maxResults ?? 10);
-        for (const m of messages) ctx.seen.set(m.id, m);
-        return { count: messages.length, messages };
+        "Search the merchant mailbox for threads to or from the customer since a date (default: 180 days ago). Returns decoded messages with quoted replies stripped. Call record_evidence for relevant messages, with ref = the message id.",
+      inputSchema: z.object({ email: z.string(), afterDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }),
+      execute: safe(async ({ email, afterDate }) => {
+        const after = afterDate ?? new Date(Date.now() - 180 * DAY).toISOString().slice(0, 10);
+        const threads = await gmail.searchThreads(email, after.replaceAll("-", "/"));
+        const out = [];
+        for (const t of threads.slice(0, 10)) {
+          const messages = await gmail.getThread(t.id);
+          for (const m of messages) ctx.seen.set(m.id, m);
+          out.push({ threadId: t.id, messages });
+        }
+        return { count: out.length, threads: out, note: out.length ? undefined : `No email threads with ${email} since ${after}` };
       }),
     }),
 
     record_evidence: tool({
       description:
-        "Record evidence you found so it can be cited. ref must be the id of a record a tool returned in this run (Gmail message id, Stripe charge/dispute/subscription id, Salesforce case id).",
+        "Record evidence you found so it can be cited. ref must be the id of a record a tool returned in this run (Gmail message id, Stripe charge/dispute/refund id, Salesforce case id).",
       inputSchema: z.object({
         source: z.enum(["stripe", "salesforce", "gmail"]),
         kind: z.enum(["delivery_proof", "customer_communication", "dispute_history", "cancellation_request", "order_record", "other"]),
@@ -319,12 +362,13 @@ export function buildTools(ctx: RunContext) {
 
     // ---------- actions ----------
     stripe_submit_evidence: tool({
-      description: "Submit dispute evidence to Stripe (FIGHT branches). The tool reads the dispute back and reports verified.",
-      inputSchema: z.object({ rebuttal: z.string(), includeEvidenceIds: z.array(z.string()) }),
+      description:
+        "Submit dispute evidence to Stripe (FIGHT branches). Submission is final. Shipping fields, customer details and quoted customer emails from the cited evidence are attached automatically; you write the rebuttal. The tool reads the dispute back and reports verified.",
+      inputSchema: z.object({ rebuttal: z.string().max(15000), includeEvidenceIds: z.array(z.string()) }),
       execute: safe(async ({ rebuttal, includeEvidenceIds }) =>
         runAction(ctx, {
           action: "stripe.submit_evidence",
-          expected: "status under_review with evidence populated",
+          expected: "status under_review, submission_count = 1, evidence populated",
           live: liveDispute,
           perform: async (_n, idempotencyKey) => {
             const submit = !ctx.chaos.fire("stripe.submit_evidence");
@@ -333,10 +377,11 @@ export function buildTools(ctx: RunContext) {
           },
           verify: async () => {
             const d = await readbackDispute();
-            const populated = !!(d.evidence?.customer_communication || d.evidence?.uncategorized_text);
+            const count = d.evidence_details?.submission_count ?? 0;
+            const populated = !!d.evidence?.uncategorized_text;
             return {
-              passed: d.status === "under_review" && populated,
-              observed: `dispute status = ${d.status}, evidence ${populated ? "populated" : "empty"}`,
+              passed: SUBMITTED_STATUSES.includes(d.status) && count === 1 && populated,
+              observed: `dispute status = ${d.status}, submission_count = ${count}, evidence ${populated ? "populated" : "empty"}`,
             };
           },
         }),
@@ -344,7 +389,7 @@ export function buildTools(ctx: RunContext) {
     }),
 
     stripe_accept_dispute: tool({
-      description: "Accept (close) the dispute in Stripe. ACCEPT branch only; over $200 requires approval first.",
+      description: "Accept (close) the dispute in Stripe. Irreversible. ACCEPT branch only; over $200 requires recorded approval first.",
       inputSchema: z.object({}),
       execute: safe(async () =>
         runAction(ctx, {
@@ -352,18 +397,18 @@ export function buildTools(ctx: RunContext) {
           expected: "status lost",
           live: liveDispute,
           perform: async (_n, idempotencyKey) => {
-            await stripeApi.acceptDispute(c.id, { idempotencyKey });
+            await stripeApi.closeDispute(c.id, { idempotencyKey });
           },
           verify: async () => {
             const d = await readbackDispute();
-            return { passed: d.status === "lost", observed: `dispute status = ${d.status}` };
+            return { passed: ACCEPTED_STATUSES.includes(d.status), observed: `dispute status = ${d.status}` };
           },
         }),
       ),
     }),
 
     stripe_cancel_subscription: tool({
-      description: "Cancel the customer's still-active subscription (ACCEPT branch).",
+      description: "Cancel the customer's still-active Stripe subscription (ACCEPT branch), if one exists.",
       inputSchema: z.object({ subscriptionId: z.string() }),
       execute: safe(async ({ subscriptionId }) =>
         runAction(ctx, {
@@ -386,40 +431,36 @@ export function buildTools(ctx: RunContext) {
     }),
 
     salesforce_create_case: tool({
-      description: "Open a follow-up case on the customer's Salesforce contact (e.g. after accepting a dispute).",
+      description: "Open a follow-up case on the customer's Salesforce contact. For ACCEPT the subject is always 'Dispute accepted: <dispute id>'.",
       inputSchema: z.object({ subject: z.string(), description: z.string(), priority: z.enum(["Low", "Medium", "High"]) }),
       execute: safe(async ({ subject, description, priority }) =>
-        sfCase("follow_up", SUBJECT.followUp(c.id, subject), description, priority),
+        sfCase("follow_up", c.decision?.branch === "ACCEPT" ? SUBJECT.accepted(c.id) : SUBJECT.followUp(c.id, subject), description, priority),
       ),
     }),
 
     salesforce_flag_repeat_disputer: tool({
-      description: "Flag the Salesforce contact as a repeat disputer and open the risk case (FIGHT_AND_FLAG only).",
+      description: "Set RISK_FLAG: friendly_fraud on the Salesforce contact and open the 'Chargeback risk: repeat disputer' case (FIGHT_AND_FLAG only).",
       inputSchema: z.object({ note: z.string() }),
       execute: safe(async ({ note }) => {
         const id = contactId();
         return runAction(ctx, {
           action: "salesforce.flag_contact",
-          expected: `contact Description contains ${RISK_MARKER} and exactly 1 "${SUBJECT.risk}" case`,
+          expected: `RISK_FLAG: ${RISK_FLAG.flagged} and exactly 1 "${SUBJECT.risk}" case`,
           checkBeforeWrite: true,
           live: async () => ({
-            priorDisputes: (await stripeApi.listCustomerDisputes(c.dispute.customerId, POLICY.repeatDisputerWindowDays)).filter(
-              (d) => d.id !== c.id,
-            ).length,
+            priorDisputes: (await stripeApi.listCustomerDisputes(c.dispute.customerId, POLICY.repeatDisputerWindowDays, c.id)).length,
           }),
           perform: async () => {
-            const contact = await sf.getContact(id);
-            if (!contact.Description?.includes(RISK_MARKER))
-              await sf.updateContact(id, {
-                Description: `${contact.Description ?? ""}\n${RISK_MARKER} repeat disputer flagged ${new Date().toISOString()}: ${note}`.trim(),
-              });
+            const contact = await sf.getContact(id); // PATCH replaces Description whole: rewrite only the flag line
+            if (sf.descriptionLine(contact.Description, RISK_FLAG.key) !== RISK_FLAG.flagged)
+              await sf.updateContact(id, { Description: sf.setDescriptionLine(contact.Description, RISK_FLAG.key, RISK_FLAG.flagged) });
             if ((await sf.findCases(id, SUBJECT.risk)).length === 0)
               await sf.createCase({ contactId: id, subject: SUBJECT.risk, description: `Dispute ${c.id}: ${note}`, priority: "High" });
           },
           verify: async () => {
             const [contact, cases] = await Promise.all([sf.getContact(id), sf.findCases(id, SUBJECT.risk)]);
-            const flagged = !!contact.Description?.includes(RISK_MARKER);
-            return { passed: flagged && cases.length === 1, observed: `contact ${flagged ? "flagged" : "not flagged"}, ${cases.length} risk case(s)` };
+            const flag = sf.descriptionLine(contact.Description, RISK_FLAG.key) ?? "missing";
+            return { passed: flag === RISK_FLAG.flagged && cases.length === 1, observed: `RISK_FLAG: ${flag}, ${cases.length} risk case(s)` };
           },
         });
       }),
@@ -439,7 +480,7 @@ export function buildTools(ctx: RunContext) {
         const r = await postToSlack(
           ctx,
           "approvals",
-          `Needs approval: accept ${money(c.dispute.amount)} dispute ${c.id}. ${reason}\nRationale: ${c.decision?.rationale ?? ""}`,
+          `Needs approval: accept ${money(c.dispute.amount)} dispute. ${reason}\nRationale: ${c.decision?.rationale ?? ""}\nApprove or reject in Sentinel.`,
         );
         if (r.verified) {
           c.approval = { requiredFor: "ACCEPT", requestedAt: Date.now() };
@@ -453,7 +494,7 @@ export function buildTools(ctx: RunContext) {
 
     escalate_to_human: tool({
       description:
-        "Hand the case to a human: opens a Salesforce 'Evidence needed' case and posts to #disputes. Use for ASK_HUMAN, and when an action fails verification twice.",
+        "Hand the case to a human: opens a Salesforce 'Evidence needed: <dispute id>' case listing exact gaps and posts to #disputes with the due date. Use for ASK_HUMAN, and when an action fails verification twice.",
       inputSchema: z.object({ reason: z.string(), whatIsMissing: z.array(z.string()) }),
       execute: safe(async ({ reason, whatIsMissing }) => {
         const list = whatIsMissing.map((m) => `- ${m}`).join("\n");
@@ -461,17 +502,8 @@ export function buildTools(ctx: RunContext) {
         const sfResult: ActionResult = c.customer?.sfContactId
           ? await sfCase("evidence_needed", SUBJECT.evidenceNeeded(c.id), `${reason}\nMissing:\n${list}\nEvidence due ${due}.`, "High")
           : { ok: false, verified: false, attempt: 0, observed: "no Salesforce contact; case not created" };
-        const slackResult = await postToSlack(
-          ctx,
-          "disputes",
-          `Needs a human: dispute ${c.id} (${money(c.dispute.amount)}), evidence due ${due}. ${reason}\nMissing:\n${list}`,
-        );
-        return {
-          ok: sfResult.ok && slackResult.ok,
-          verified: sfResult.verified && slackResult.verified,
-          salesforce: sfResult,
-          slack: slackResult,
-        };
+        const slackResult = await postToSlack(ctx, "disputes", `Needs a human: ${money(c.dispute.amount)} dispute, evidence due ${due}. ${reason}\nMissing:\n${list}`);
+        return { ok: sfResult.ok && slackResult.ok, verified: sfResult.verified && slackResult.verified, salesforce: sfResult, slack: slackResult };
       }),
     }),
   };

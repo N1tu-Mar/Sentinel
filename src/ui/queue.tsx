@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { SCENARIOS } from "@/domain/scenarios";
 import type { DisputeCase } from "@/domain/types";
 import { deadline, money, reasonText, StatusPill } from "./format";
 
@@ -10,7 +9,15 @@ export function Queue() {
   const [cases, setCases] = useState<DisputeCase[] | null>(null);
   const [busy, setBusy] = useState<"sync" | "simulate" | null>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
-  const [scenario, setScenario] = useState(SCENARIOS[0].key);
+  const [scenarios, setScenarios] = useState<{ key: string; title: string }[]>([]);
+  const [scenario, setScenario] = useState("scenario-07");
+
+  useEffect(() => {
+    fetch("/api/eval/results")
+      .then((r) => r.json())
+      .then((d) => setScenarios(d.scenarios ?? []))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/cases", { cache: "no-store" });
@@ -72,7 +79,7 @@ export function Queue() {
               onChange={(e) => setScenario(e.target.value)}
               className="max-w-48 bg-transparent px-2 py-1.5 text-sm"
             >
-              {SCENARIOS.map((s) => (
+              {scenarios.map((s) => (
                 <option key={s.key} value={s.key}>
                   {s.title}
                 </option>

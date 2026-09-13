@@ -18,7 +18,7 @@ export function stripe(): Stripe {
   return client;
 }
 
-export const idOf = (x: string | { id: string } | null | undefined) => (typeof x === "string" ? x : x?.id ?? "");
+export const idOf = (x: string | { id: string } | null | undefined) => (typeof x === "string" ? x : (x?.id ?? ""));
 
 export const getDispute = (id: string) => stripe().disputes.retrieve(id);
 export const getCharge = (id: string) => stripe().charges.retrieve(id);
@@ -29,17 +29,28 @@ export const listCustomerCharges = (customerId: string) => stripe().charges.list
 export const listSubscriptions = (customerId: string) =>
   stripe().subscriptions.list({ customer: customerId, status: "all", limit: 100 });
 
-export async function listDisputes(opts: { status?: string } = {}) {
-  const res = await stripe().disputes.list({ limit: 100 });
-  return res.data.filter((d) => !opts.status || d.status === opts.status);
+/** Paginates /v1/disputes (charge expanded so callers can join on charge.customer). */
+export async function listDisputes(opts: { statuses?: readonly string[]; createdGte?: number } = {}): Promise<Stripe.Dispute[]> {
+  const out: Stripe.Dispute[] = [];
+  const params: Stripe.DisputeListParams = { limit: 100, expand: ["data.charge"] };
+  if (opts.createdGte) params.created = { gte: opts.createdGte };
+  for await (const d of stripe().disputes.list(params)) {
+    if (!opts.statuses || opts.statuses.includes(d.status)) out.push(d);
+    if (out.length >= 1000) break; // ponytail: hard cap, page by created window if a merchant ever has more
+  }
+  return out;
 }
 
-/** Stripe's disputes.list has no customer filter: match disputes to this customer's charges. */
-export async function listCustomerDisputes(customerId: string, sinceDays = 90) {
-  const [charges, disputes] = await Promise.all([listCustomerCharges(customerId), stripe().disputes.list({ limit: 100 })]);
-  const chargeIds = new Set(charges.data.map((c) => c.id));
-  const since = Date.now() / 1000 - sinceDays * 86400;
-  return disputes.data.filter((d) => chargeIds.has(idOf(d.charge)) && d.created >= since);
+/** No customer filter on /v1/disputes: list the window, join on charge.customer, exclude the current dispute. */
+export async function listCustomerDisputes(customerId: string, sinceDays: number, excludeId?: string) {
+  const since = Math.floor(Date.now() / 1000) - sinceDays * 86400;
+  const out: Stripe.Dispute[] = [];
+  for (const d of await listDisputes({ createdGte: since })) {
+    if (d.id === excludeId) continue;
+    const customer = typeof d.charge === "string" ? (await getCharge(d.charge)).customer : d.charge?.customer;
+    if (idOf(customer) === customerId) out.push(d);
+  }
+  return out;
 }
 
 export const submitEvidence = (
@@ -48,7 +59,8 @@ export const submitEvidence = (
   opts: { idempotencyKey: string; submit: boolean },
 ) => stripe().disputes.update(id, { evidence, submit: opts.submit }, { idempotencyKey: opts.idempotencyKey });
 
-export const acceptDispute = (id: string, opts: { idempotencyKey: string }) =>
+/** Accepting a dispute. Irreversible: needs_response → lost. */
+export const closeDispute = (id: string, opts: { idempotencyKey: string }) =>
   stripe().disputes.close(id, {}, { idempotencyKey: opts.idempotencyKey });
 
 export const cancelSubscription = (id: string, opts: { idempotencyKey: string }) =>

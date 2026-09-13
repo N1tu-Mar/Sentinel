@@ -80,7 +80,8 @@ export async function runAction(ctx: RunContext, spec: ActionSpec): Promise<Acti
   }
 
   const n = rec.attempts.length + 1;
-  const idempotencyKey = `${rec.key}:attempt${n}`;
+  // A new key per attempt: reusing a key replays the first response (even a 200 that changed nothing).
+  const idempotencyKey = `sentinel:${c.id}:${spec.action.split(".")[1]}${spec.target ? `:${spec.target}` : ""}:${n}`;
 
   // Readback-before-write. On a retry it runs before the policy check: a late-landing first attempt
   // (e.g. dispute now under_review) is recognised as done instead of being blocked or re-sent.
@@ -112,7 +113,11 @@ export async function runAction(ctx: RunContext, spec: ActionSpec): Promise<Acti
     if (done) return done;
   }
 
-  if (n > 1) await ctx.emit({ type: "recovery", text: `Retrying ${label} with a new idempotency key ${idempotencyKey}` });
+  if (n > 1) {
+    const previousKey = rec.attempts[rec.attempts.length - 1]?.idempotencyKey;
+    await ctx.emit({ type: "recovery", text: `Retrying ${label} with a new idempotency key ${idempotencyKey}` });
+    ctx.trace?.recordSpan({ name: "recovery.retry", input: { action: label, idempotency_key_old: previousKey, idempotency_key_new: idempotencyKey } });
+  }
   await ctx.emit({ type: "action", action: spec.action, attempt: n, idempotencyKey });
   const attempt: ActionRecord["attempts"][number] = { n, idempotencyKey, at: Date.now(), verified: false };
   rec.attempts.push(attempt);
@@ -130,6 +135,11 @@ export async function runAction(ctx: RunContext, spec: ActionSpec): Promise<Acti
   rec.observed = v.observed;
   rec.state = v.passed ? "succeeded_verified" : n >= POLICY.maxAttemptsPerAction ? "failed" : "pending";
   await ctx.emit({ type: "verify", action: label, expected: spec.expected, observed: v.observed, passed: v.passed });
+  ctx.trace?.recordSpan({
+    name: `verify.${label}`,
+    input: { expected: spec.expected, attempt: n, idempotency_key: idempotencyKey },
+    output: { observed: v.observed, passed: v.passed },
+  });
   await ctx.save();
   return {
     ok: !attempt.note,

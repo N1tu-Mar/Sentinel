@@ -1,24 +1,22 @@
 # Arga twins: provision, seed, reset
 
-Sentinel runs against four Arga twins in one twin run: `stripe`, `gmail`, `slack`, `salesforce`.
+Sentinel runs against four Arga twins in one twin run: `stripe`, `gmail`, `slack`, `salesforce`. Four twins in one run
+needs Arga's Team plan (Free allows one twin with a fixed 10-minute lifetime). Research notes: `docs/research/arga-twins.md`.
 
 ## Provision
 
 ```bash
 export ARGA_API_KEY=arga_...
-arga twin-runs create --twins stripe,gmail,slack,salesforce --ttl 480 --wait
+npm run provision                              # empty twins; seed through the APIs
+npm run provision -- --with-scenario-prompts   # twins seeded from the eight fixture scenario prompts
+npm run twins:check -- --capture               # one read per system; saves live responses to fixtures/live/
 ```
 
-Or with the TypeScript SDK (`arga-sdk`, already a dependency):
+`scripts/provision.ts` uses `arga-sdk` (`twins.provision` → poll `twins.getStatus` until `ready`) and writes every twin's
+`envVars` plus `ARGA_TWIN_RUN_ID` to `.env.twins` (gitignored). Scripts load it automatically; for `next dev` copy it into
+`.env.local`, and for production put the values in the Vercel env. TTL defaults to 480 minutes (`ARGA_TTL_MINUTES`).
 
-```ts
-const arga = new Arga({ apiKey: process.env.ARGA_API_KEY! });
-const { runId } = await arga.twins.provision({ twins: ["stripe", "gmail", "slack", "salesforce"], ttlMinutes: 480 });
-const status = await arga.twins.getStatus(runId); // status.twins[name].baseUrl / .envVars
-```
-
-Copy each twin's `envVars` into `.env.local` and set `ARGA_TWIN_RUN_ID=<runId>`. Sentinel reads both its own
-variable names and Arga's documented ones:
+Sentinel reads both its own variable names and Arga's documented ones:
 
 | System | Sentinel reads |
 | --- | --- |
@@ -27,22 +25,25 @@ variable names and Arga's documented ones:
 | Gmail | `GMAIL_ACCESS_TOKEN` or `GOOGLE_ACCESS_TOKEN`; `GMAIL_API_BASE_URL` |
 | Salesforce | `SALESFORCE_ACCESS_TOKEN`; `SALESFORCE_API_BASE_URL` or `SALESFORCE_INSTANCE_URL` |
 
-Then `npm run twins:check` should print four ✓ lines.
-
 ## Seed
 
-`src/domain/scenarios.ts` defines the eight scenarios. `npm run seed -- <scenario ...>` (no args = all) creates
-customers, charges, subscriptions, prior disputes, Salesforce contacts and cases, Gmail messages and Slack channels
-through each twin's normal API. Every seeded customer email carries a run tag (`dana.kim+<tag>@example.com`), so
-repeated seeds never collide even without a reset.
+The eight scenarios are the research fixtures in `fixtures/scenarios/` (regenerate with `python3 fixtures/_gen.py`).
 
-Disputes are created the way Stripe test mode creates them: charging the test payment methods
-`pm_card_createDispute` / `pm_card_createDisputeProductNotReceived`. Whether the Stripe twin emulates these is the
-first thing to confirm after provisioning (Kill Check #1 in the build brief). If it does not, point only the Stripe
-variables at real Stripe test mode; the adapter is unchanged.
+- **API seeding** (default): `npm run seed -- 07 04` (no args = all) creates the Stripe customer, prior disputes, the
+  disputed charge with shipping, the Salesforce contact (Description lines) and cases, the Gmail threads, and the Slack
+  channels through each twin's normal API. The customer email gets a run tag (`alex.rivera+<tag>@example.com`), so reruns
+  never collide.
+- **Prompt seeding**: provision with `--with-scenario-prompts` and set `EVAL_SEED_MODE=prompt`. The harness then finds
+  each scenario's dispute by customer email instead of seeding. Arga maps prompts loosely, so assertions check
+  relationships and fixture facts, not fixture ids.
 
-`deadline_passed` needs a dispute whose `due_by` is already in the past. Neither Stripe test mode nor the public
-twin API lets us set that, so the harness reports the scenario as skipped (with the reason) instead of faking it.
+How the Stripe twin creates disputes is undocumented (Kill Check #1). The seeder tries, per reason,
+`pm_card_createDisputeProductNotReceived` / `pm_card_createDispute`, then the raw test cards `4000000000002685` /
+`4000000000000259`, and records which one produced a dispute in its notes. If none do, point only the Stripe variables at
+real Stripe test mode; nothing else changes.
+
+`scenario-08` needs a dispute whose deadline has already passed. The public APIs cannot backdate `due_by`, so under API
+seeding the harness reports it as skipped with that reason; prompt seeding may produce it.
 
 ## Reset
 
@@ -51,9 +52,9 @@ npm run reset                       # arga.twins.reset(ARGA_TWIN_RUN_ID): restor
 npm run reset -- --salesforce-admin # also POST /admin/reset on the Salesforce twin
 ```
 
-The eval harness (`src/eval/harness.ts`) calls the same reset before every scenario whenever `ARGA_TWIN_RUN_ID` is set.
+The eval harness calls the same reset before every scenario whenever `ARGA_TWIN_RUN_ID` is set.
 
 ## Don't let the twins expire mid-demo
 
-Short-lived runs expire. Provision with a long TTL, extend with `arga.twins.extend(runId, { ttlMinutes })`, or create a
-permanent environment from a saved scenario, and put those URLs in the Vercel env vars.
+Check `expires_at` from provisioning, extend with `arga.twins.extend(runId, { ttlMinutes })`, and reprovision before
+recording if needed.

@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import * as stripeApi from "@/adapters/stripe";
 import type { DisputeCase } from "@/domain/types";
 import { getStore } from "@/store";
+import { OPEN_STATUSES } from "./policy";
 
 export async function caseFromDispute(d: Stripe.Dispute, scenario?: string): Promise<DisputeCase> {
   const chargeId = stripeApi.idOf(d.charge);
@@ -57,7 +58,7 @@ export async function ingestDispute(disputeId: string, scenario?: string): Promi
 export async function syncFromStripe(): Promise<{ created: string[] }> {
   const store = getStore();
   const created: string[] = [];
-  for (const d of await stripeApi.listDisputes({ status: "needs_response" })) {
+  for (const d of await stripeApi.listDisputes({ statuses: OPEN_STATUSES })) {
     if (await store.getCase(d.id)) continue;
     await store.putCase(await withCustomer(await caseFromDispute(d)));
     created.push(d.id);

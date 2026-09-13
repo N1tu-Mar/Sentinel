@@ -13,7 +13,8 @@
     "reset": "tsx scripts/reset.ts",
     "agent": "tsx scripts/agent-cli.ts",
     "eval": "tsx scripts/eval-cli.ts",
-    "test": "tsx scripts/selftest.ts"
+    "test": "tsx scripts/selftest.ts",
+    "provision": "tsx scripts/provision.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.53",

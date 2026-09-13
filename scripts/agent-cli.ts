@@ -8,7 +8,7 @@ import { seedScenario } from "@/eval/seed";
 import { getStore } from "@/store";
 
 // npm run agent -- --case dp_123 [--chaos drop_submit_once] [--approve]
-// npm run agent -- --scenario receipt_confirmed_repeat          (seeds the scenario first)
+// npm run agent -- --scenario 07          (seeds the fixture scenario first)
 const { values } = parseArgs({
   options: {
     case: { type: "string" },
@@ -56,7 +56,7 @@ const fmt = (e: TimelineEvent): string => {
 };
 
 let c = await runCase(disputeId, { chaosMode: (values.chaos ?? scenario?.chaos ?? "none") as ChaosMode });
-if (c.status === "awaiting_approval" && (values.approve || scenario?.autoApprove)) c = await decideApproval(c.id, "approved", "cli");
+if (c.status === "awaiting_approval" && (values.approve || scenario?.needsApproval)) c = await decideApproval(c.id, "approved", "cli");
 
 for (const e of await store.getEvents(c.id)) console.log(fmt(e));
 console.log("\nstatus:", c.status, "| branch:", c.decision?.branch, "| provider calls:", c.providerCalls, "| forbidden:", c.forbiddenEffects);

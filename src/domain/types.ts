@@ -20,7 +20,7 @@ export type ChaosMode =
   | "slack_timeout_once";
 
 export interface DisputeCase {
-  id: string; // = Stripe dispute id (dp_...)
+  id: string; // = Stripe dispute id (du_… current, dp_… older; never validate the prefix)
   status: CaseStatus;
   scenario?: string;
   chaosMode: ChaosMode;
@@ -158,6 +158,7 @@ export interface EvalResult {
   passed: boolean;
   skipped?: string;
   failures: string[];
+  forbiddenObserved?: string[];
   expectedBranch: Branch;
   branch?: Branch;
   finalStatus?: CaseStatus;
