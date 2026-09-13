@@ -54,6 +54,21 @@ real Stripe test mode; nothing else changes.
 `scenario-08` needs a dispute whose deadline has already passed. The public APIs cannot backdate `due_by`, so under API
 seeding the harness reports it as skipped with that reason; prompt seeding may produce it.
 
+## Sentinel sandbox (while Arga runs are unavailable)
+
+The account's free Arga quota ran out on 2026-09-13, so Salesforce, Gmail and Slack can also run against Sentinel's
+own sandbox (`src/sandbox/server.ts`). It serves the subset of those REST APIs that the adapters call, with the shapes
+observed on the live twins (`fixtures/live/`), and keeps state. It is not an Arga twin, and every case and eval result
+produced against it is labeled "Sandbox". Stripe is never sandboxed: it stays on real Stripe test mode.
+
+- **Local:** `npm run sandbox` (port 4010; writes `.env.development.local`, which `next dev` and the scripts load).
+  Delete that file to go back to twins.
+- **Hosted:** the deployed app serves the same handler at `/api/sandbox/*`, with state in Upstash Redis and a
+  `SANDBOX_TOKEN` bearer token.
+- **Switch production:** `npm run env:use -- sandbox` points production at the hosted sandbox.
+  `npm run provision && npm run env:use -- arga` points it at fresh twins; Free-plan twins expire after 10 minutes.
+  Both commands update the Vercel production env and redeploy.
+
 ## Reset
 
 ```bash

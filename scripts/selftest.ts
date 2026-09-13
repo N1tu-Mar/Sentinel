@@ -296,6 +296,14 @@ assert.ok(allPass(awaiting, state({ disputeStatus: "needs_response", submissionC
   assert.equal((await sl.readback(posted.channel, posted.ts)).found, true);
   assert.equal((await sl.findMessages("disputes", "du_x")).length, 1);
   server.close();
+
+  // hosted mode requires the shared token; an untouched write never reaches state
+  const { handleSandbox, memoryStore } = await import("@/sandbox/server");
+  const hosted = memoryStore();
+  const url = new URL("http://sandbox/salesforce/services/data/v60.0/sobjects/Contact");
+  const denied = await handleSandbox(hosted, { method: "POST", pathname: url.pathname, url, authorization: "Bearer wrong", contentType: "application/json", body: "{}" }, "secret");
+  assert.equal(denied.status, 401);
+  assert.equal((await hosted.load("salesforce")).contacts.length, 0);
 }
 
 console.log("selftest: all checks passed");

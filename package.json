@@ -16,7 +16,8 @@
     "test": "tsx scripts/selftest.ts",
     "provision": "tsx scripts/provision.ts",
     "lemma:smoke": "tsx scripts/lemma-smoke.ts",
-    "sandbox": "tsx scripts/sandbox.ts"
+    "sandbox": "tsx scripts/sandbox.ts",
+    "env:use": "tsx scripts/vercel-env.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.53",

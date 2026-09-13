@@ -64,10 +64,17 @@ function memoryStore(): Store {
   };
 }
 
-let store: Store | undefined;
-export function getStore(): Store {
+let redis: Redis | null | undefined;
+export function redisClient(): Redis | null {
+  if (redis !== undefined) return redis;
   // Vercel Marketplace Upstash exposes KV_REST_API_URL / KV_REST_API_TOKEN.
   const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  return (store ??= url && token ? redisStore(new Redis({ url, token })) : memoryStore());
+  return (redis = url && token ? new Redis({ url, token }) : null);
+}
+
+let store: Store | undefined;
+export function getStore(): Store {
+  const client = redisClient();
+  return (store ??= client ? redisStore(client) : memoryStore());
 }

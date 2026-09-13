@@ -46,7 +46,7 @@ export function EvalBoard() {
   const lastRun = board.results.length ? new Date(Math.max(...board.results.map((r) => r.at))).toLocaleString() : null;
   const environments = [...new Set(board.results.map((r) => r.environment).filter(Boolean))];
   const envLabel = environments.length
-    ? ` against ${environments.map((e) => (e === "local-sandbox" ? "Stripe test mode + local sandbox" : "Stripe test mode + Arga twins")).join(" and ")}`
+    ? ` against ${environments.map((e) => (e === "local-sandbox" ? "Stripe test mode + Sentinel sandbox" : "Stripe test mode + Arga twins")).join(" and ")}`
     : "";
   const has = m.scenariosRun > 0;
   const figures: [string, string, string][] = [

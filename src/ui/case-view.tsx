@@ -104,9 +104,9 @@ export function CaseView({ id }: { id: string }) {
             {c.environment === "local-sandbox" && (
               <span
                 className="rounded-full border border-rule px-2.5 py-0.5 text-xs text-muted"
-                title="Salesforce, Gmail and Slack ran against Sentinel's local sandbox; Stripe is real test mode"
+                title="Salesforce, Gmail and Slack ran against Sentinel's sandbox, not Arga twins; Stripe is real test mode"
               >
-                Local sandbox
+                Sandbox
               </span>
             )}
             {c.chaosMode !== "none" && (

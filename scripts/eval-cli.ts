@@ -18,7 +18,7 @@ for (const key of keys) {
 
 const metrics = computeMetrics(results);
 const environment = process.env.SANDBOX_URL
-  ? "Stripe test mode + local sandbox (Salesforce, Gmail, Slack)"
+  ? "Stripe test mode + Sentinel sandbox (Salesforce, Gmail, Slack; not Arga twins)"
   : "Stripe test mode + Arga twins (Salesforce, Gmail, Slack)";
 const at = new Date().toISOString();
 await writeFile("eval/results.json", JSON.stringify({ at, environment, model: process.env.AGENT_MODEL ?? "claude-sonnet-5", metrics, results }, null, 2) + "\n");
