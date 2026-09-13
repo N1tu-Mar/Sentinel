@@ -1,5 +1,5 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { TraceContext, vercelAI } from "@uselemma/tracing";
+import { Lemma, vercelAI } from "@uselemma/tracing";
 import { generateText, isStepCount, type Telemetry } from "ai";
 import { callSink } from "@/adapters/logged-fetch";
 import type { ChaosMode, DisputeCase, ProviderCall } from "@/domain/types";
@@ -12,6 +12,8 @@ import { buildTools, money, postToSlack } from "./tools";
 import { verifyPostconditions } from "./verify";
 
 export const agentModel = () => process.env.AGENT_MODEL ?? "claude-sonnet-5";
+
+let lemmaClient: Lemma | undefined; // one shared server-side client (reads LEMMA_API_KEY / LEMMA_PROJECT_ID)
 
 const sinkFor = (ctx: RunContext) => (call: ProviderCall) => void ctx.emit({ type: "provider_call", ...call });
 
@@ -56,13 +58,14 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
       ].join("\n\n")
     : initialUserMessage(c);
 
-  // Lemma (lemma-tracing skill, Vercel AI SDK path): a fresh vercelAI() per run; it closes the root trace from onEnd.
-  // An explicit trace handle is passed so the trace id can be shown on the case and readback/recovery spans
-  // recorded under the same root. threadId = dispute id groups the approval resume with the first run.
+  // Lemma (lemma-tracing skill, Vercel AI SDK path): a fresh vercelAI() per run, attached to a lemma.trace() handle
+  // so the trace id can be shown on the case and readback/recovery spans land under the same root. The integration
+  // sends the root when the AI SDK run ends (verified with npm run lemma:smoke); the explicit end() below only covers
+  // a run that never reached that callback. threadId = dispute id groups the approval resume with the first run.
   const metadata = { threadId: c.id, disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 };
-  const trace = new TraceContext({ id: crypto.randomUUID(), name: "sentinel.dispute_run", input: prompt, threadId: c.id, metadata });
-  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel.dispute_run", metadata }) : undefined;
-  if (lemma) {
+  const trace = lemmaOn ? (lemmaClient ??= new Lemma()).trace({ name: "sentinel.dispute_run", input: prompt, threadId: c.id, metadata }) : undefined;
+  const lemma = trace ? vercelAI({ trace, agentName: "sentinel.dispute_run", metadata }) : undefined;
+  if (trace) {
     c.lemmaTraceId = trace.id;
     ctx.trace = trace;
   }
@@ -108,6 +111,7 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
   } catch (err) {
     await lemma?.fail(err);
     await lemma?.flush();
+    if (trace && !trace.isEnded) await trace.end({ output: { status: "failed", error: errMsg(err) } });
     c.status = "failed";
     await ctx.emit({ type: "error", text: `Agent loop failed: ${errMsg(err)}` });
     await ctx.emit({ type: "status", status: "failed" });
@@ -116,6 +120,8 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
   }
 
   await finalize(ctx);
+  if (trace && !trace.isEnded)
+    await trace.end({ output: { summary: c.finalSummary, status: c.status, verificationPassed: c.verification?.passed } });
   return c;
 }
 

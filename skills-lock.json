@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "lemma-tracing": {
+      "source": "uselemma/lemma",
+      "sourceType": "github",
+      "skillPath": "skills/lemma-tracing/SKILL.md",
+      "computedHash": "3e2e7504bc82081ab6dfe550d5a6fa1d487ee09b5912cd6067b5fd23b4b9fc59"
+    }
+  }
+}

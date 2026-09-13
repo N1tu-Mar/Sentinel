@@ -14,7 +14,8 @@
     "agent": "tsx scripts/agent-cli.ts",
     "eval": "tsx scripts/eval-cli.ts",
     "test": "tsx scripts/selftest.ts",
-    "provision": "tsx scripts/provision.ts"
+    "provision": "tsx scripts/provision.ts",
+    "lemma:smoke": "tsx scripts/lemma-smoke.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.53",

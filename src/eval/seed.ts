@@ -146,7 +146,8 @@ export async function locateScenario(s: Scenario): Promise<Seeded> {
 export function argaClient() {
   const apiKey = process.env.ARGA_API_KEY;
   if (!apiKey) throw new Error("ARGA_API_KEY is required");
-  return new Arga({ apiKey, ...(process.env.ARGA_API_URL ? { baseUrl: process.env.ARGA_API_URL } : {}) });
+  // arga-sdk defaults to app.argalabs.com, which serves the web app (HTML); the API lives on api.argalabs.com.
+  return new Arga({ apiKey, baseUrl: process.env.ARGA_API_URL || "https://api.argalabs.com" });
 }
 
 /** Restore every twin in the Arga run to its provisioned baseline. */
