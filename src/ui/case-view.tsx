@@ -88,7 +88,7 @@ export function CaseView({ id }: { id: string }) {
       <header className="border-b border-rule bg-sheet">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-start justify-between gap-4 px-4 py-5 sm:px-6">
           <div className="min-w-0">
-            <Link href="/" className="text-sm text-indigo hover:underline">
+            <Link href="/disputes" className="text-sm text-indigo hover:underline">
               All disputes
             </Link>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">

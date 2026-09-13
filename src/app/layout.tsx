@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import { SiteHeader } from "@/ui/site-header";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -15,22 +15,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <nav className="border-b border-rule bg-ink text-sheet">
-          <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-4 py-2.5 text-sm sm:px-6">
-            <Link href="/" className="font-semibold tracking-tight">
-              Sentinel
-            </Link>
-            <Link href="/" className="text-sheet/75 hover:text-sheet">
-              Disputes
-            </Link>
-            <Link href="/eval" className="text-sheet/75 hover:text-sheet">
-              Evaluation
-            </Link>
-            <Link href="/sandbox" className="text-sheet/75 hover:text-sheet">
-              Sandbox
-            </Link>
-          </div>
-        </nav>
+        <SiteHeader />
         {children}
       </body>
     </html>
