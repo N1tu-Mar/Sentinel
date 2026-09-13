@@ -1,20 +1,28 @@
 @import "tailwindcss";
 
+/*
+ * Sentinel: carbon copy.
+ * Every write is an original; the provider readback is its carbon copy, and the copy has to match.
+ * Bond paper and carbon ink for the page, canary for the copy sheet, stamp red and green only for readback outcomes.
+ */
 @theme {
-  --color-paper: #edf0f4;
-  --color-sheet: #f9fafb;
-  --color-ink: #12161b;
-  --color-muted: #5b6470;
-  --color-rule: #d3d9e0;
-  --color-amber: #a8660b;
-  --color-amber-wash: #fbefd9;
-  --color-green: #1d7a4c;
-  --color-green-wash: #e2f1e8;
-  --color-red: #b8322b;
-  --color-red-wash: #f8e3e1;
-  --color-indigo: #4a54a0;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-paper: #eef0f3;
+  --color-sheet: #fbfbfc;
+  --color-ink: #161a33;
+  --color-muted: #585e75;
+  --color-rule: #d6d9e1;
+  --color-carbon: #2f3aa8;
+  --color-carbon-wash: #e6e8f7;
+  --color-canary: #f3e59b;
+  --color-canary-wash: #faf4d3;
+  --color-canary-ink: #6b5400;
+  --color-green: #1f6b45;
+  --color-green-wash: #dcede2;
+  --color-red: #b02c22;
+  --color-red-wash: #f6dfdb;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 :root {
@@ -26,28 +34,85 @@ body {
   color: var(--color-ink);
 }
 
+::selection {
+  background: var(--color-canary);
+  color: var(--color-ink);
+}
+
 .num {
   font-variant-numeric: tabular-nums;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-indigo);
+  outline: 2px solid var(--color-carbon);
   outline-offset: 2px;
 }
 
-/* Motion only in response to events: evidence arriving, a verification landing. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* Archivo, set wide for headlines. */
+.display {
+  font-family: var(--font-display);
+  font-stretch: 118%;
+  font-weight: 780;
+  letter-spacing: -0.025em;
+}
+
+/* Archivo, set narrow for form-field labels. */
+.field-label {
+  font-family: var(--font-display);
+  font-stretch: 72%;
+  font-weight: 650;
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* A rubber stamp. Used only where a readback actually matched or didn't. */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-stretch: 78%;
+  font-weight: 800;
+  font-size: 0.78rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0.4em 0.6em 0.35em;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px var(--stamp-ground, var(--color-sheet)), inset 0 0 0 3px currentColor;
+  transform: rotate(-4deg);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='120' height='60' filter='url(%23n)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='120' height='60' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The torn edge between an original and its copy. */
+.perforation {
+  height: 10px;
+  background-image: radial-gradient(circle at 5px 5px, var(--color-paper) 2.5px, transparent 3px);
+  background-size: 12px 10px;
+  background-repeat: repeat-x;
+}
+
+/* Motion only in response to events: evidence arriving, a verification landing, a stamp coming down. */
 @keyframes evidence-in {
   0% {
     opacity: 0;
     transform: translateY(-6px);
-    background-color: var(--color-amber-wash);
-    border-color: var(--color-amber);
+    background-color: var(--color-canary-wash);
+    border-color: var(--color-canary-ink);
   }
   35% {
     opacity: 1;
     transform: none;
-    background-color: var(--color-amber-wash);
-    border-color: var(--color-amber);
+    background-color: var(--color-canary-wash);
+    border-color: var(--color-canary-ink);
   }
   100% {
     background-color: var(--color-sheet);
@@ -71,6 +136,37 @@ body {
   animation: verify-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+@keyframes stamp-down {
+  0% {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.6);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(-4deg) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg) scale(1);
+  }
+}
+.anim-stamp {
+  animation: stamp-down 0.32s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+/* The carbon copy slides out from under the original, once. */
+@keyframes copy-out {
+  0% {
+    transform: translate(-10px, -22px);
+  }
+  100% {
+    transform: none;
+  }
+}
+.anim-copy {
+  animation: copy-out 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s both;
+}
+
 .state-flip {
   transition:
     background-color 0.6s ease,
@@ -80,7 +176,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .anim-evidence,
-  .anim-verify {
+  .anim-verify,
+  .anim-stamp,
+  .anim-copy {
     animation: none;
   }
   .state-flip {

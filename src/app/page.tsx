@@ -90,8 +90,8 @@ const DOORS = [
     ],
     cta: "Open the dispute queue",
     href: "/disputes",
-    tone: "border-amber/30 bg-amber-wash/40 hover:border-amber/60 focus-within:border-amber",
-    ctaTone: "text-amber",
+    tone: "border-canary-ink/30 bg-canary-wash hover:border-canary-ink/60 focus-within:border-canary-ink",
+    ctaTone: "text-carbon",
   },
   {
     audience: "For engineering & risk",
@@ -184,7 +184,7 @@ function Section({ id, eyebrowText, heading, children }: { id: string; eyebrowTe
 function Step({ n, title, systems, text }: (typeof STEPS)[number] & { n: number }) {
   return (
     <li className="grid gap-2 border-t border-slate-100 py-8 first:border-t-0 md:grid-cols-[3rem_14rem_1fr] md:gap-6">
-      <span className="num text-2xl font-bold text-amber" aria-hidden="true">
+      <span className="num text-2xl font-bold text-carbon" aria-hidden="true">
         {n}
       </span>
       <div>
@@ -225,7 +225,7 @@ function Door({ audience, title, points, cta, href, tone, ctaTone }: (typeof DOO
 
 export default function Page() {
   return (
-    <div className="bg-white text-slate-900 selection:bg-amber-wash">
+    <div className="bg-white text-slate-900 ">
       <main className="mx-auto max-w-4xl px-6">
         <section aria-labelledby="hero-h" className="flex flex-col justify-center py-16 sm:min-h-[78vh]">
           <h1 id="hero-h" className="max-w-3xl text-[2.6rem] font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
@@ -233,7 +233,7 @@ export default function Page() {
             <span className="block">Now prove what happened.</span>
             <span className="mt-4 block text-slate-500">
               <span className="sr-only">Crossed out: </span>
-              <s className="decoration-amber decoration-[0.09em]">HTTP 200 means done.</s>
+              <s className="decoration-carbon decoration-[0.09em]">HTTP 200 means done.</s>
             </span>
           </h1>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-slate-600">
@@ -317,7 +317,7 @@ export default function Page() {
             {CASE_ROWS.map((r, i) => (
               <li key={r.title} className="grid gap-1 border-t border-slate-100 py-5 first:border-t-0 sm:grid-cols-[13rem_1fr] sm:gap-6">
                 <h3 className="text-sm font-semibold text-slate-900">
-                  <span className="num mr-2 text-amber" aria-hidden="true">
+                  <span className="num mr-2 text-carbon" aria-hidden="true">
                     {i + 1}
                   </span>
                   {r.title}

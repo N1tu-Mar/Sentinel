@@ -169,7 +169,7 @@ export function EvalBoard() {
                       </details>
                     )}
                     {r?.caseId && (
-                      <a href={`/cases/${r.caseId}`} className="mt-0.5 block text-xs text-indigo hover:underline">
+                      <a href={`/cases/${r.caseId}`} className="mt-0.5 block text-xs text-carbon hover:underline">
                         Open case
                       </a>
                     )}

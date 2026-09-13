@@ -88,7 +88,7 @@ export function CaseView({ id }: { id: string }) {
       <header className="border-b border-rule bg-sheet">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-start justify-between gap-4 px-4 py-5 sm:px-6">
           <div className="min-w-0">
-            <Link href="/disputes" className="text-sm text-indigo hover:underline">
+            <Link href="/disputes" className="text-sm text-carbon hover:underline">
               All disputes
             </Link>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
@@ -262,7 +262,7 @@ export function CaseView({ id }: { id: string }) {
               <p>
                 Trace <span className="font-mono text-xs">{c.lemmaTraceId.slice(0, 8)}</span>{" "}
                 {process.env.NEXT_PUBLIC_LEMMA_TRACE_URL ? (
-                  <a className="text-indigo hover:underline" href={process.env.NEXT_PUBLIC_LEMMA_TRACE_URL.replace("{id}", c.lemmaTraceId)}>
+                  <a className="text-carbon hover:underline" href={process.env.NEXT_PUBLIC_LEMMA_TRACE_URL.replace("{id}", c.lemmaTraceId)}>
                     open in Lemma
                   </a>
                 ) : (
@@ -302,7 +302,7 @@ function EvidenceCard({ item, animate, cited }: { item: EvidenceItem; animate: b
         <p className="mt-1.5 text-sm">{item.summary}</p>
       )}
       <details className="mt-2 text-xs">
-        <summary className="cursor-pointer text-indigo">Underlying record</summary>
+        <summary className="cursor-pointer text-carbon">Underlying record</summary>
         <pre className="mt-1 max-h-60 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] text-muted">{JSON.stringify(item.raw, null, 2)}</pre>
       </details>
     </li>
@@ -331,7 +331,7 @@ function Highlighted({ text }: { text: string }) {
     <>
       {parts.map((p, i) => (
         <span key={i}>
-          {i === key ? <mark className="rounded-sm bg-amber-wash px-0.5 text-ink">{p}</mark> : p}{" "}
+          {i === key ? <mark className="rounded-sm bg-canary px-0.5 text-ink">{p}</mark> : p}{" "}
         </span>
       ))}
     </>
@@ -405,7 +405,7 @@ function Timeline({ events, animateFrom }: { events: TimelineEvent[]; animateFro
           case "evidence":
             return (
               <li key={it.i} className="pl-4 text-sm">
-                <a href={`#${e.item.id}`} className="text-indigo hover:underline">
+                <a href={`#${e.item.id}`} className="text-carbon hover:underline">
                   Found evidence {e.item.id}
                 </a>{" "}
                 <span className="text-muted">{e.item.summary.slice(0, 110)}</span>
