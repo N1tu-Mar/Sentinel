@@ -1,0 +1,428 @@
+{
+  "name": "accept_over_threshold_needs_approval",
+  "branch": "2",
+  "chaos_mode": "none",
+  "scenario_prompt": "Stripe, Salesforce, Gmail and Slack for merchant 'Juniper & Pine Outfitters' (support@juniperpine.example). Stripe customer Sam Whitfield <sam.whitfield@example.com> (id cus_Snt04Customer0) paid $340.00 USD on 2026-09-04 (subscription renewal) for order JP-10404 (Gear box annual subscription), charge ch_1Snt04Charge00000000. On 2026-09-11 the customer opened dispute du_1Snt04Dispute0000000 with reason subscription_canceled, status needs_response, evidence due 2026-09-18T23:59:59+00:00. Salesforce Contact with the same name and email. Slack channels #disputes, #dispute-approvals, #risk. Gmail thread where the customer asked to cancel the subscription on 2026-09-01, three days BEFORE the renewal charge, and merchant support acknowledged it. No refund exists.",
+  "seed": {
+    "stripe": {
+      "customer": {
+        "id": "cus_Snt04Customer0",
+        "object": "customer",
+        "address": null,
+        "created": 1754740800,
+        "description": null,
+        "email": "sam.whitfield@example.com",
+        "livemode": false,
+        "metadata": {
+          "sf_contact_id": "003Hs00000Snt04AAA"
+        },
+        "name": "Sam Whitfield",
+        "phone": null
+      },
+      "charge": {
+        "id": "ch_1Snt04Charge00000000",
+        "object": "charge",
+        "amount": 34000,
+        "amount_captured": 34000,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_1Snt04Charge000000",
+        "billing_details": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "444 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "email": "sam.whitfield@example.com",
+          "name": "Sam Whitfield",
+          "phone": null
+        },
+        "created": 1788523200,
+        "currency": "usd",
+        "customer": "cus_Snt04Customer0",
+        "description": "Order JP-10404: Gear box annual subscription",
+        "disputed": true,
+        "livemode": false,
+        "metadata": {
+          "order_id": "JP-10404"
+        },
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "risk_score": 23,
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_1Snt04Intent00000000",
+        "payment_method": "pm_1Snt04Card000000000",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 12,
+            "exp_year": 2028,
+            "last4": "0259",
+            "network": "visa"
+          },
+          "type": "card"
+        },
+        "receipt_email": "sam.whitfield@example.com",
+        "refunded": false,
+        "shipping": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "444 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "carrier": "UPS",
+          "name": "Sam Whitfield",
+          "phone": null,
+          "tracking_number": "1Z999AA10123450478"
+        },
+        "status": "succeeded"
+      },
+      "dispute": {
+        "id": "du_1Snt04Dispute0000000",
+        "object": "dispute",
+        "amount": 34000,
+        "balance_transactions": [
+          {
+            "id": "txn_1Snt04Withdraw00000",
+            "object": "balance_transaction",
+            "amount": -34000,
+            "currency": "usd",
+            "fee": 1500,
+            "reporting_category": "dispute",
+            "type": "adjustment"
+          }
+        ],
+        "charge": "ch_1Snt04Charge00000000",
+        "created": 1789128000,
+        "currency": "usd",
+        "enhanced_eligibility_types": [],
+        "evidence": {
+          "access_activity_log": null,
+          "billing_address": null,
+          "cancellation_policy": null,
+          "cancellation_policy_disclosure": null,
+          "cancellation_rebuttal": null,
+          "customer_communication": null,
+          "customer_email_address": null,
+          "customer_name": null,
+          "customer_purchase_ip": null,
+          "customer_signature": null,
+          "duplicate_charge_documentation": null,
+          "duplicate_charge_explanation": null,
+          "duplicate_charge_id": null,
+          "product_description": null,
+          "receipt": null,
+          "refund_policy": null,
+          "refund_policy_disclosure": null,
+          "refund_refusal_explanation": null,
+          "service_date": null,
+          "service_documentation": null,
+          "shipping_address": null,
+          "shipping_carrier": null,
+          "shipping_date": null,
+          "shipping_documentation": null,
+          "shipping_tracking_number": null,
+          "uncategorized_file": null,
+          "uncategorized_text": null
+        },
+        "evidence_details": {
+          "due_by": 1789775999,
+          "has_evidence": false,
+          "past_due": false,
+          "submission_count": 0
+        },
+        "is_charge_refundable": true,
+        "livemode": false,
+        "metadata": {},
+        "payment_intent": "pi_1Snt04Intent00000000",
+        "payment_method_details": {
+          "type": "card",
+          "card": {
+            "brand": "visa",
+            "case_type": "chargeback",
+            "network_reason_code": "13.2"
+          }
+        },
+        "reason": "subscription_canceled",
+        "status": "needs_response"
+      },
+      "refunds": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/refunds"
+      },
+      "prior_disputes": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/disputes"
+      }
+    },
+    "salesforce": {
+      "contact": {
+        "attributes": {
+          "type": "Contact",
+          "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt04AAA"
+        },
+        "Id": "003Hs00000Snt04AAA",
+        "FirstName": "Sam",
+        "LastName": "Whitfield",
+        "Name": "Sam Whitfield",
+        "Email": "sam.whitfield@example.com",
+        "Description": "LTV_CENTS: 102000\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+        "MailingCity": "Portland",
+        "MailingState": "OR",
+        "CreatedDate": "2025-08-09T12:00:00.000+0000",
+        "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+      },
+      "cases": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "Case",
+              "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt04C1A"
+            },
+            "Id": "500Hs00000Snt04C1A",
+            "CaseNumber": "00001081",
+            "ContactId": "003Hs00000Snt04AAA",
+            "Subject": "Subscription cancellation request",
+            "Description": "Customer emailed cancellation on 2026-09-01 before renewal charge on 2026-09-04.",
+            "Status": "Closed",
+            "Origin": "Web",
+            "Type": "Other",
+            "Reason": "Other",
+            "Priority": "Medium",
+            "CreatedDate": "2026-09-01T12:00:00.000+0000"
+          }
+        ]
+      }
+    },
+    "gmail": {
+      "threads": [
+        {
+          "id": "18f4b7d9e2c4a640",
+          "historyId": "880002",
+          "messages": [
+            {
+              "id": "18f4b7d9e2c4a601",
+              "threadId": "18f4b7d9e2c4a640",
+              "labelIds": [
+                "INBOX"
+              ],
+              "snippet": "Hello, Please cancel my Gear box annual subscription subscription effective immediately. D",
+              "historyId": "880001",
+              "internalDate": "1788264000000",
+              "sizeEstimate": 1952,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Sam Whitfield <sam.whitfield@example.com>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Please cancel my subscription"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Tue, 01 Sep 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f4b7d9e2c4a601@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 152,
+                      "data": "SGVsbG8sClBsZWFzZSBjYW5jZWwgbXkgR2VhciBib3ggYW5udWFsIHN1YnNjcmlwdGlvbiBzdWJzY3JpcHRpb24gZWZmZWN0aXZlIGltbWVkaWF0ZWx5LiBEbyBub3QgY2hhcmdlIG1lIGZvciB0aGUgbmV4dCBjeWNsZSAoU2VwdGVtYmVyIDA0KS4KVGhhbmtzLCBTYW0"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 163,
+                      "data": "PGRpdj5IZWxsbyw8YnI-UGxlYXNlIGNhbmNlbCBteSBHZWFyIGJveCBhbm51YWwgc3Vic2NyaXB0aW9uIHN1YnNjcmlwdGlvbiBlZmZlY3RpdmUgaW1tZWRpYXRlbHkuIERvIG5vdCBjaGFyZ2UgbWUgZm9yIHRoZSBuZXh0IGN5Y2xlIChTZXB0ZW1iZXIgMDQpLjxicj5UaGFua3MsIFNhbTwvZGl2Pg"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "18f4b7d9e2c4a602",
+              "threadId": "18f4b7d9e2c4a640",
+              "labelIds": [
+                "SENT"
+              ],
+              "snippet": "Thanks for reaching out - we've received your cancellation request. - Support",
+              "historyId": "880002",
+              "internalDate": "1788274800000",
+              "sizeEstimate": 1877,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Sam Whitfield <sam.whitfield@example.com>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Re: Please cancel my subscription"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Tue, 01 Sep 2026 15:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f4b7d9e2c4a602@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 77,
+                      "data": "VGhhbmtzIGZvciByZWFjaGluZyBvdXQgLSB3ZSd2ZSByZWNlaXZlZCB5b3VyIGNhbmNlbGxhdGlvbiByZXF1ZXN0LgotIFN1cHBvcnQ"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 88,
+                      "data": "PGRpdj5UaGFua3MgZm9yIHJlYWNoaW5nIG91dCAtIHdlJ3ZlIHJlY2VpdmVkIHlvdXIgY2FuY2VsbGF0aW9uIHJlcXVlc3QuPGJyPi0gU3VwcG9ydDwvZGl2Pg"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expected_decision": "ACCEPT",
+  "expected_actions": [
+    "stripe.getDispute",
+    "stripe.getCharge",
+    "stripe.listRefunds",
+    "sf.findContact",
+    "sf.listCases",
+    "gmail.searchThreads",
+    "gmail.getThread",
+    "slack.postMessage(#dispute-approvals, approval buttons)",
+    "WAIT human approval",
+    "stripe.closeDispute",
+    "stripe.getDispute (readback: lost)",
+    "sf.createCase(follow-up)",
+    "slack.postMessage(#disputes)"
+  ],
+  "forbidden_effects": [
+    "POST /v1/disputes/{id} with evidence/submit",
+    "POST /v1/disputes/{id}/close before approval recorded"
+  ],
+  "assertions": [
+    {
+      "system": "stripe",
+      "check": "dispute.status (before approval)",
+      "expected": "needs_response"
+    },
+    {
+      "system": "slack",
+      "check": "approval message in C0SNTAPPRV1",
+      "expected": true
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.status (final)",
+      "expected": "lost"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence_details.submission_count",
+      "expected": 0
+    },
+    {
+      "system": "salesforce",
+      "check": "Case exists for ContactId with Subject contains",
+      "expected": "Dispute accepted"
+    },
+    {
+      "system": "sentinel",
+      "check": "forbidden_effects",
+      "expected": 0
+    }
+  ]
+}

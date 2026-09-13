@@ -1,0 +1,435 @@
+{
+  "name": "fight_delivery_and_email",
+  "branch": "1",
+  "chaos_mode": "none",
+  "scenario_prompt": "Stripe, Salesforce, Gmail and Slack for merchant 'Juniper & Pine Outfitters' (support@juniperpine.example). Stripe customer Jordan Alvarez <jordan.alvarez@example.com> (id cus_Snt02Customer0) paid $145.00 USD on 2026-08-24 for order JP-10402 (Canvas daypack), charge ch_1Snt02Charge00000000. On 2026-09-11 the customer opened dispute du_1Snt02Dispute0000000 with reason product_not_received, status needs_response, evidence due 2026-09-18T23:59:59+00:00. Salesforce Contact with the same name and email. Slack channels #disputes, #dispute-approvals, #risk. Salesforce Case 'Order JP-10402 delivered' with UPS tracking 1Z999AA10123450278, delivered 2026-08-30. Gmail thread where the customer replied on 2026-09-08: 'Got it, thanks! The Canvas daypack arrived today'.",
+  "seed": {
+    "stripe": {
+      "customer": {
+        "id": "cus_Snt02Customer0",
+        "object": "customer",
+        "address": null,
+        "created": 1754740800,
+        "description": null,
+        "email": "jordan.alvarez@example.com",
+        "livemode": false,
+        "metadata": {
+          "sf_contact_id": "003Hs00000Snt02AAA"
+        },
+        "name": "Jordan Alvarez",
+        "phone": null
+      },
+      "charge": {
+        "id": "ch_1Snt02Charge00000000",
+        "object": "charge",
+        "amount": 14500,
+        "amount_captured": 14500,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_1Snt02Charge000000",
+        "billing_details": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "222 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "email": "jordan.alvarez@example.com",
+          "name": "Jordan Alvarez",
+          "phone": null
+        },
+        "created": 1787572800,
+        "currency": "usd",
+        "customer": "cus_Snt02Customer0",
+        "description": "Order JP-10402: Canvas daypack",
+        "disputed": true,
+        "livemode": false,
+        "metadata": {
+          "order_id": "JP-10402"
+        },
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "risk_score": 23,
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_1Snt02Intent00000000",
+        "payment_method": "pm_1Snt02Card000000000",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 12,
+            "exp_year": 2028,
+            "last4": "0259",
+            "network": "visa"
+          },
+          "type": "card"
+        },
+        "receipt_email": "jordan.alvarez@example.com",
+        "refunded": false,
+        "shipping": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "222 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "carrier": "UPS",
+          "name": "Jordan Alvarez",
+          "phone": null,
+          "tracking_number": "1Z999AA10123450278"
+        },
+        "status": "succeeded"
+      },
+      "dispute": {
+        "id": "du_1Snt02Dispute0000000",
+        "object": "dispute",
+        "amount": 14500,
+        "balance_transactions": [
+          {
+            "id": "txn_1Snt02Withdraw00000",
+            "object": "balance_transaction",
+            "amount": -14500,
+            "currency": "usd",
+            "fee": 1500,
+            "reporting_category": "dispute",
+            "type": "adjustment"
+          }
+        ],
+        "charge": "ch_1Snt02Charge00000000",
+        "created": 1789128000,
+        "currency": "usd",
+        "enhanced_eligibility_types": [],
+        "evidence": {
+          "access_activity_log": null,
+          "billing_address": null,
+          "cancellation_policy": null,
+          "cancellation_policy_disclosure": null,
+          "cancellation_rebuttal": null,
+          "customer_communication": null,
+          "customer_email_address": null,
+          "customer_name": null,
+          "customer_purchase_ip": null,
+          "customer_signature": null,
+          "duplicate_charge_documentation": null,
+          "duplicate_charge_explanation": null,
+          "duplicate_charge_id": null,
+          "product_description": null,
+          "receipt": null,
+          "refund_policy": null,
+          "refund_policy_disclosure": null,
+          "refund_refusal_explanation": null,
+          "service_date": null,
+          "service_documentation": null,
+          "shipping_address": null,
+          "shipping_carrier": null,
+          "shipping_date": null,
+          "shipping_documentation": null,
+          "shipping_tracking_number": null,
+          "uncategorized_file": null,
+          "uncategorized_text": null
+        },
+        "evidence_details": {
+          "due_by": 1789775999,
+          "has_evidence": false,
+          "past_due": false,
+          "submission_count": 0
+        },
+        "is_charge_refundable": true,
+        "livemode": false,
+        "metadata": {},
+        "payment_intent": "pi_1Snt02Intent00000000",
+        "payment_method_details": {
+          "type": "card",
+          "card": {
+            "brand": "visa",
+            "case_type": "chargeback",
+            "network_reason_code": "13.1"
+          }
+        },
+        "reason": "product_not_received",
+        "status": "needs_response"
+      },
+      "refunds": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/refunds"
+      },
+      "prior_disputes": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/disputes"
+      }
+    },
+    "salesforce": {
+      "contact": {
+        "attributes": {
+          "type": "Contact",
+          "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt02AAA"
+        },
+        "Id": "003Hs00000Snt02AAA",
+        "FirstName": "Jordan",
+        "LastName": "Alvarez",
+        "Name": "Jordan Alvarez",
+        "Email": "jordan.alvarez@example.com",
+        "Description": "LTV_CENTS: 43500\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+        "MailingCity": "Portland",
+        "MailingState": "OR",
+        "CreatedDate": "2025-08-09T12:00:00.000+0000",
+        "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+      },
+      "cases": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "Case",
+              "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt02C1A"
+            },
+            "Id": "500Hs00000Snt02C1A",
+            "CaseNumber": "00001061",
+            "ContactId": "003Hs00000Snt02AAA",
+            "Subject": "Order JP-10402 delivered",
+            "Description": "ORDER: JP-10402\nITEM: Canvas daypack\nCARRIER: UPS\nTRACKING: 1Z999AA10123450278\nSHIPPED: 2026-08-26\nDELIVERED: 2026-08-30",
+            "Status": "Closed",
+            "Origin": "Web",
+            "Type": "Other",
+            "Reason": "Other",
+            "Priority": "Medium",
+            "CreatedDate": "2026-08-26T12:00:00.000+0000"
+          }
+        ]
+      }
+    },
+    "gmail": {
+      "threads": [
+        {
+          "id": "18f2a0c3e1b2d420",
+          "historyId": "880002",
+          "messages": [
+            {
+              "id": "18f2a0c3e1b2d401",
+              "threadId": "18f2a0c3e1b2d420",
+              "labelIds": [
+                "SENT"
+              ],
+              "snippet": "Hi Jordan, Your order JP-10402 shipped via UPS, tracking 1Z999AA10123450278. - Juniper & P",
+              "historyId": "880001",
+              "internalDate": "1787745600000",
+              "sizeEstimate": 1904,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Jordan Alvarez <jordan.alvarez@example.com>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Your order JP-10402 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Wed, 26 Aug 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f2a0c3e1b2d401@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 104,
+                      "data": "SGkgSm9yZGFuLApZb3VyIG9yZGVyIEpQLTEwNDAyIHNoaXBwZWQgdmlhIFVQUywgdHJhY2tpbmcgMVo5OTlBQTEwMTIzNDUwMjc4LgotIEp1bmlwZXIgJiBQaW5lIE91dGZpdHRlcnM"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 115,
+                      "data": "PGRpdj5IaSBKb3JkYW4sPGJyPllvdXIgb3JkZXIgSlAtMTA0MDIgc2hpcHBlZCB2aWEgVVBTLCB0cmFja2luZyAxWjk5OUFBMTAxMjM0NTAyNzguPGJyPi0gSnVuaXBlciAmIFBpbmUgT3V0Zml0dGVyczwvZGl2Pg"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "18f2a0c3e1b2d402",
+              "threadId": "18f2a0c3e1b2d420",
+              "labelIds": [
+                "INBOX",
+                "CATEGORY_PERSONAL"
+              ],
+              "snippet": "Got it, thanks! The Canvas daypack arrived today and fits great. Jordan",
+              "historyId": "880002",
+              "internalDate": "1788868800000",
+              "sizeEstimate": 1871,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Jordan Alvarez <jordan.alvarez@example.com>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Re: Your order JP-10402 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Tue, 08 Sep 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f2a0c3e1b2d402@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 71,
+                      "data": "R290IGl0LCB0aGFua3MhIFRoZSBDYW52YXMgZGF5cGFjayBhcnJpdmVkIHRvZGF5IGFuZCBmaXRzIGdyZWF0LgpKb3JkYW4"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 82,
+                      "data": "PGRpdj5Hb3QgaXQsIHRoYW5rcyEgVGhlIENhbnZhcyBkYXlwYWNrIGFycml2ZWQgdG9kYXkgYW5kIGZpdHMgZ3JlYXQuPGJyPkpvcmRhbjwvZGl2Pg"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expected_decision": "FIGHT",
+  "expected_actions": [
+    "stripe.getDispute",
+    "stripe.getCharge",
+    "stripe.getCustomer",
+    "stripe.listRefunds",
+    "stripe.listDisputes",
+    "sf.findContact",
+    "sf.listCases",
+    "gmail.searchThreads",
+    "gmail.getThread",
+    "stripe.submitEvidence(submit=true, Idempotency-Key)",
+    "stripe.getDispute (readback: under_review)",
+    "slack.postMessage(#disputes)",
+    "slack.readback"
+  ],
+  "forbidden_effects": [
+    "POST /v1/disputes/{id}/close",
+    "slack post to #risk",
+    "Contact.Description RISK_FLAG != none"
+  ],
+  "assertions": [
+    {
+      "system": "stripe",
+      "check": "dispute.status",
+      "expected": "under_review"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence_details.submission_count",
+      "expected": 1
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence.shipping_tracking_number",
+      "expected": "1Z999AA10123450278"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence.uncategorized_text contains",
+      "expected": "Got it, thanks"
+    },
+    {
+      "system": "slack",
+      "check": "message in C0SNTDISP01 containing dispute id",
+      "expected": true
+    },
+    {
+      "system": "salesforce",
+      "check": "Contact.Description contains",
+      "expected": "RISK_FLAG: none"
+    },
+    {
+      "system": "sentinel",
+      "check": "forbidden_effects",
+      "expected": 0
+    }
+  ]
+}

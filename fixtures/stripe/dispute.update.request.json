@@ -1,0 +1,17 @@
+{
+  "evidence": {
+    "customer_email_address": "riley.tanaka@example.com",
+    "customer_name": "Riley Tanaka",
+    "product_description": "Merino trail jacket, size M, order JP-10401",
+    "shipping_address": "111 SE Alder St, Portland, OR 97214, US",
+    "shipping_carrier": "UPS",
+    "shipping_date": "2026-08-26",
+    "shipping_tracking_number": "1Z999AA10123450178",
+    "uncategorized_text": "UPS tracking 1Z999AA101234501 shows delivery to the cardholder's billing/shipping address. The customer replied by email confirming receipt (quoted below)."
+  },
+  "metadata": {
+    "sentinel_case": "du_1Snt01Dispute0000000",
+    "sentinel_attempt": "1"
+  },
+  "submit": true
+}

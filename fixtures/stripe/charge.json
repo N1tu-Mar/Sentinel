@@ -1,0 +1,74 @@
+{
+  "id": "ch_1Snt01Charge00000000",
+  "object": "charge",
+  "amount": 8900,
+  "amount_captured": 8900,
+  "amount_refunded": 0,
+  "balance_transaction": "txn_1Snt01Charge000000",
+  "billing_details": {
+    "address": {
+      "city": "Portland",
+      "country": "US",
+      "line1": "111 SE Alder St",
+      "line2": null,
+      "postal_code": "97214",
+      "state": "OR"
+    },
+    "email": "riley.tanaka@example.com",
+    "name": "Riley Tanaka",
+    "phone": null
+  },
+  "created": 1787572800,
+  "currency": "usd",
+  "customer": "cus_Snt01Customer0",
+  "description": "Order JP-10401: Merino trail jacket",
+  "disputed": true,
+  "livemode": false,
+  "metadata": {
+    "order_id": "JP-10401"
+  },
+  "outcome": {
+    "network_status": "approved_by_network",
+    "reason": null,
+    "risk_level": "normal",
+    "risk_score": 23,
+    "seller_message": "Payment complete.",
+    "type": "authorized"
+  },
+  "paid": true,
+  "payment_intent": "pi_1Snt01Intent00000000",
+  "payment_method": "pm_1Snt01Card000000000",
+  "payment_method_details": {
+    "card": {
+      "brand": "visa",
+      "checks": {
+        "address_line1_check": "pass",
+        "address_postal_code_check": "pass",
+        "cvc_check": "pass"
+      },
+      "country": "US",
+      "exp_month": 12,
+      "exp_year": 2028,
+      "last4": "0259",
+      "network": "visa"
+    },
+    "type": "card"
+  },
+  "receipt_email": "riley.tanaka@example.com",
+  "refunded": false,
+  "shipping": {
+    "address": {
+      "city": "Portland",
+      "country": "US",
+      "line1": "111 SE Alder St",
+      "line2": null,
+      "postal_code": "97214",
+      "state": "OR"
+    },
+    "carrier": "UPS",
+    "name": "Riley Tanaka",
+    "phone": null,
+    "tracking_number": "1Z999AA10123450178"
+  },
+  "status": "succeeded"
+}

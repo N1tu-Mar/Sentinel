@@ -1,0 +1,152 @@
+{
+  "id": "18f3b7d9e2c4a630",
+  "historyId": "880002",
+  "messages": [
+    {
+      "id": "18f3b7d9e2c4a601",
+      "threadId": "18f3b7d9e2c4a630",
+      "labelIds": [
+        "INBOX"
+      ],
+      "snippet": "Hello, Please cancel my Coffee club subscription subscription effective immediately. Do no",
+      "historyId": "880001",
+      "internalDate": "1788264000000",
+      "sizeEstimate": 1950,
+      "payload": {
+        "partId": "",
+        "mimeType": "multipart/alternative",
+        "filename": "",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Priya Natarajan <priya.natarajan@example.com>"
+          },
+          {
+            "name": "To",
+            "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+          },
+          {
+            "name": "Subject",
+            "value": "Please cancel my subscription"
+          },
+          {
+            "name": "Date",
+            "value": "Tue, 01 Sep 2026 12:00:00 +0000"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<18f3b7d9e2c4a601@mail.example>"
+          }
+        ],
+        "body": {
+          "size": 0
+        },
+        "parts": [
+          {
+            "partId": "0",
+            "mimeType": "text/plain",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 150,
+              "data": "SGVsbG8sClBsZWFzZSBjYW5jZWwgbXkgQ29mZmVlIGNsdWIgc3Vic2NyaXB0aW9uIHN1YnNjcmlwdGlvbiBlZmZlY3RpdmUgaW1tZWRpYXRlbHkuIERvIG5vdCBjaGFyZ2UgbWUgZm9yIHRoZSBuZXh0IGN5Y2xlIChTZXB0ZW1iZXIgMDQpLgpUaGFua3MsIFByaXlh"
+            }
+          },
+          {
+            "partId": "1",
+            "mimeType": "text/html",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 161,
+              "data": "PGRpdj5IZWxsbyw8YnI-UGxlYXNlIGNhbmNlbCBteSBDb2ZmZWUgY2x1YiBzdWJzY3JpcHRpb24gc3Vic2NyaXB0aW9uIGVmZmVjdGl2ZSBpbW1lZGlhdGVseS4gRG8gbm90IGNoYXJnZSBtZSBmb3IgdGhlIG5leHQgY3ljbGUgKFNlcHRlbWJlciAwNCkuPGJyPlRoYW5rcywgUHJpeWE8L2Rpdj4"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "18f3b7d9e2c4a602",
+      "threadId": "18f3b7d9e2c4a630",
+      "labelIds": [
+        "SENT"
+      ],
+      "snippet": "Thanks for reaching out - we've received your cancellation request. - Support",
+      "historyId": "880002",
+      "internalDate": "1788274800000",
+      "sizeEstimate": 1877,
+      "payload": {
+        "partId": "",
+        "mimeType": "multipart/alternative",
+        "filename": "",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+          },
+          {
+            "name": "To",
+            "value": "Priya Natarajan <priya.natarajan@example.com>"
+          },
+          {
+            "name": "Subject",
+            "value": "Re: Please cancel my subscription"
+          },
+          {
+            "name": "Date",
+            "value": "Tue, 01 Sep 2026 15:00:00 +0000"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<18f3b7d9e2c4a602@mail.example>"
+          }
+        ],
+        "body": {
+          "size": 0
+        },
+        "parts": [
+          {
+            "partId": "0",
+            "mimeType": "text/plain",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 77,
+              "data": "VGhhbmtzIGZvciByZWFjaGluZyBvdXQgLSB3ZSd2ZSByZWNlaXZlZCB5b3VyIGNhbmNlbGxhdGlvbiByZXF1ZXN0LgotIFN1cHBvcnQ"
+            }
+          },
+          {
+            "partId": "1",
+            "mimeType": "text/html",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 88,
+              "data": "PGRpdj5UaGFua3MgZm9yIHJlYWNoaW5nIG91dCAtIHdlJ3ZlIHJlY2VpdmVkIHlvdXIgY2FuY2VsbGF0aW9uIHJlcXVlc3QuPGJyPi0gU3VwcG9ydDwvZGl2Pg"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

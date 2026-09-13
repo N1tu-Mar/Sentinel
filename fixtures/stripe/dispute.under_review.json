@@ -1,0 +1,69 @@
+{
+  "id": "du_1Snt01Dispute0000000",
+  "object": "dispute",
+  "amount": 8900,
+  "balance_transactions": [
+    {
+      "id": "txn_1Snt01Withdraw00000",
+      "object": "balance_transaction",
+      "amount": -8900,
+      "currency": "usd",
+      "fee": 1500,
+      "reporting_category": "dispute",
+      "type": "adjustment"
+    }
+  ],
+  "charge": "ch_1Snt01Charge00000000",
+  "created": 1789128000,
+  "currency": "usd",
+  "enhanced_eligibility_types": [],
+  "evidence": {
+    "access_activity_log": null,
+    "billing_address": null,
+    "cancellation_policy": null,
+    "cancellation_policy_disclosure": null,
+    "cancellation_rebuttal": null,
+    "customer_communication": null,
+    "customer_email_address": "riley.tanaka@example.com",
+    "customer_name": "Riley Tanaka",
+    "customer_purchase_ip": null,
+    "customer_signature": null,
+    "duplicate_charge_documentation": null,
+    "duplicate_charge_explanation": null,
+    "duplicate_charge_id": null,
+    "product_description": "Merino trail jacket, size M, order JP-10401",
+    "receipt": null,
+    "refund_policy": null,
+    "refund_policy_disclosure": null,
+    "refund_refusal_explanation": null,
+    "service_date": null,
+    "service_documentation": null,
+    "shipping_address": "111 SE Alder St, Portland, OR 97214, US",
+    "shipping_carrier": "UPS",
+    "shipping_date": "2026-08-26",
+    "shipping_documentation": null,
+    "shipping_tracking_number": "1Z999AA10123450178",
+    "uncategorized_file": null,
+    "uncategorized_text": "UPS tracking 1Z999AA101234501 shows delivery to the cardholder's billing/shipping address. The customer replied by email confirming receipt (quoted below)."
+  },
+  "evidence_details": {
+    "due_by": 1789775999,
+    "has_evidence": true,
+    "past_due": false,
+    "submission_count": 1
+  },
+  "is_charge_refundable": false,
+  "livemode": false,
+  "metadata": {},
+  "payment_intent": "pi_1Snt01Intent00000000",
+  "payment_method_details": {
+    "type": "card",
+    "card": {
+      "brand": "visa",
+      "case_type": "chargeback",
+      "network_reason_code": "13.1"
+    }
+  },
+  "reason": "product_not_received",
+  "status": "under_review"
+}

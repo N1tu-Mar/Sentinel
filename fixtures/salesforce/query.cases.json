@@ -1,0 +1,23 @@
+{
+  "totalSize": 1,
+  "done": true,
+  "records": [
+    {
+      "attributes": {
+        "type": "Case",
+        "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt01C1A"
+      },
+      "Id": "500Hs00000Snt01C1A",
+      "CaseNumber": "00001051",
+      "ContactId": "003Hs00000Snt01AAA",
+      "Subject": "Order JP-10401 delivered",
+      "Description": "ORDER: JP-10401\nITEM: Merino trail jacket\nCARRIER: UPS\nTRACKING: 1Z999AA10123450178\nSHIPPED: 2026-08-26\nDELIVERED: 2026-08-30\nSIGNATURE: none (left at front door, photo on file)",
+      "Status": "Closed",
+      "Origin": "Web",
+      "Type": "Other",
+      "Reason": "Other",
+      "Priority": "Medium",
+      "CreatedDate": "2026-08-26T12:00:00.000+0000"
+    }
+  ]
+}

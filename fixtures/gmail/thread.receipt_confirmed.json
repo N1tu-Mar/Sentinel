@@ -1,0 +1,153 @@
+{
+  "id": "18f1a0c3e1b2d410",
+  "historyId": "880002",
+  "messages": [
+    {
+      "id": "18f1a0c3e1b2d401",
+      "threadId": "18f1a0c3e1b2d410",
+      "labelIds": [
+        "SENT"
+      ],
+      "snippet": "Hi Riley, Your order JP-10401 shipped via UPS, tracking 1Z999AA10123450178. - Juniper & Pi",
+      "historyId": "880001",
+      "internalDate": "1787745600000",
+      "sizeEstimate": 1903,
+      "payload": {
+        "partId": "",
+        "mimeType": "multipart/alternative",
+        "filename": "",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+          },
+          {
+            "name": "To",
+            "value": "Riley Tanaka <riley.tanaka@example.com>"
+          },
+          {
+            "name": "Subject",
+            "value": "Your order JP-10401 has shipped"
+          },
+          {
+            "name": "Date",
+            "value": "Wed, 26 Aug 2026 12:00:00 +0000"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<18f1a0c3e1b2d401@mail.example>"
+          }
+        ],
+        "body": {
+          "size": 0
+        },
+        "parts": [
+          {
+            "partId": "0",
+            "mimeType": "text/plain",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 103,
+              "data": "SGkgUmlsZXksCllvdXIgb3JkZXIgSlAtMTA0MDEgc2hpcHBlZCB2aWEgVVBTLCB0cmFja2luZyAxWjk5OUFBMTAxMjM0NTAxNzguCi0gSnVuaXBlciAmIFBpbmUgT3V0Zml0dGVycw"
+            }
+          },
+          {
+            "partId": "1",
+            "mimeType": "text/html",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 114,
+              "data": "PGRpdj5IaSBSaWxleSw8YnI-WW91ciBvcmRlciBKUC0xMDQwMSBzaGlwcGVkIHZpYSBVUFMsIHRyYWNraW5nIDFaOTk5QUExMDEyMzQ1MDE3OC48YnI-LSBKdW5pcGVyICYgUGluZSBPdXRmaXR0ZXJzPC9kaXY-"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "18f1a0c3e1b2d402",
+      "threadId": "18f1a0c3e1b2d410",
+      "labelIds": [
+        "INBOX",
+        "CATEGORY_PERSONAL"
+      ],
+      "snippet": "Got it, thanks! The Merino trail jacket arrived today and fits great. Riley",
+      "historyId": "880002",
+      "internalDate": "1788868800000",
+      "sizeEstimate": 1875,
+      "payload": {
+        "partId": "",
+        "mimeType": "multipart/alternative",
+        "filename": "",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Riley Tanaka <riley.tanaka@example.com>"
+          },
+          {
+            "name": "To",
+            "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+          },
+          {
+            "name": "Subject",
+            "value": "Re: Your order JP-10401 has shipped"
+          },
+          {
+            "name": "Date",
+            "value": "Tue, 08 Sep 2026 12:00:00 +0000"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<18f1a0c3e1b2d402@mail.example>"
+          }
+        ],
+        "body": {
+          "size": 0
+        },
+        "parts": [
+          {
+            "partId": "0",
+            "mimeType": "text/plain",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 75,
+              "data": "R290IGl0LCB0aGFua3MhIFRoZSBNZXJpbm8gdHJhaWwgamFja2V0IGFycml2ZWQgdG9kYXkgYW5kIGZpdHMgZ3JlYXQuClJpbGV5"
+            }
+          },
+          {
+            "partId": "1",
+            "mimeType": "text/html",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=\"UTF-8\""
+              }
+            ],
+            "body": {
+              "size": 86,
+              "data": "PGRpdj5Hb3QgaXQsIHRoYW5rcyEgVGhlIE1lcmlubyB0cmFpbCBqYWNrZXQgYXJyaXZlZCB0b2RheSBhbmQgZml0cyBncmVhdC48YnI-UmlsZXk8L2Rpdj4"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

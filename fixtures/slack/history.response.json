@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "messages": [
+    {
+      "type": "message",
+      "subtype": "bot_message",
+      "text": "Approval needed: accept dispute du_1Snt04Dispute0000000 ($340.00)",
+      "ts": "1789300800.000100",
+      "bot_id": "B0SNTBOT01",
+      "username": "Sentinel",
+      "blocks": [
+        {
+          "type": "section",
+          "block_id": "summary",
+          "text": {
+            "type": "mrkdwn",
+            "text": "*Approval needed: accept dispute* `du_1Snt04Dispute0000000`\nCustomer: Sam Whitfield (sam.whitfield@example.com)\nAmount: *$340.00* (over $200.00 threshold) - reason `subscription_canceled`\nEvidence: customer emailed cancellation before renewal charge.\nDue: 2026-09-18 23:59 UTC"
+          }
+        },
+        {
+          "type": "actions",
+          "block_id": "approval",
+          "elements": [
+            {
+              "type": "button",
+              "action_id": "approve_accept",
+              "text": {
+                "type": "plain_text",
+                "text": "Approve accept"
+              },
+              "style": "primary",
+              "value": "du_1Snt04Dispute0000000"
+            },
+            {
+              "type": "button",
+              "action_id": "reject_accept",
+              "text": {
+                "type": "plain_text",
+                "text": "Reject"
+              },
+              "style": "danger",
+              "value": "du_1Snt04Dispute0000000"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "has_more": false,
+  "pin_count": 0,
+  "response_metadata": {
+    "next_cursor": ""
+  }
+}

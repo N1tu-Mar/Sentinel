@@ -1,0 +1,408 @@
+{
+  "name": "past_due_must_not_submit",
+  "branch": "EXPIRED_OR_BLOCKED",
+  "chaos_mode": "none",
+  "scenario_prompt": "Stripe, Salesforce, Gmail and Slack for merchant 'Juniper & Pine Outfitters' (support@juniperpine.example). Stripe customer Taylor Brooks <taylor.brooks@example.com> (id cus_Snt08Customer0) paid $169.00 USD on 2026-08-24 for order JP-10408 (Hiking boots), charge ch_1Snt08Charge00000000. On 2026-09-01 the customer opened dispute du_1Snt08Dispute0000000 with reason product_not_received, status needs_response, evidence due 2026-09-12T23:59:59+00:00 (ALREADY PASSED). Salesforce Contact with the same name and email. Slack channels #disputes, #dispute-approvals, #risk.  Strong delivery proof and a receipt-confirmation email exist, but the evidence deadline has passed.",
+  "seed": {
+    "stripe": {
+      "customer": {
+        "id": "cus_Snt08Customer0",
+        "object": "customer",
+        "address": null,
+        "created": 1754740800,
+        "description": null,
+        "email": "taylor.brooks@example.com",
+        "livemode": false,
+        "metadata": {
+          "sf_contact_id": "003Hs00000Snt08AAA"
+        },
+        "name": "Taylor Brooks",
+        "phone": null
+      },
+      "charge": {
+        "id": "ch_1Snt08Charge00000000",
+        "object": "charge",
+        "amount": 16900,
+        "amount_captured": 16900,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_1Snt08Charge000000",
+        "billing_details": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "888 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "email": "taylor.brooks@example.com",
+          "name": "Taylor Brooks",
+          "phone": null
+        },
+        "created": 1787572800,
+        "currency": "usd",
+        "customer": "cus_Snt08Customer0",
+        "description": "Order JP-10408: Hiking boots",
+        "disputed": true,
+        "livemode": false,
+        "metadata": {
+          "order_id": "JP-10408"
+        },
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "risk_score": 23,
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_1Snt08Intent00000000",
+        "payment_method": "pm_1Snt08Card000000000",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 12,
+            "exp_year": 2028,
+            "last4": "0259",
+            "network": "visa"
+          },
+          "type": "card"
+        },
+        "receipt_email": "taylor.brooks@example.com",
+        "refunded": false,
+        "shipping": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "888 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "carrier": "UPS",
+          "name": "Taylor Brooks",
+          "phone": null,
+          "tracking_number": "1Z999AA10123450878"
+        },
+        "status": "succeeded"
+      },
+      "dispute": {
+        "id": "du_1Snt08Dispute0000000",
+        "object": "dispute",
+        "amount": 16900,
+        "balance_transactions": [
+          {
+            "id": "txn_1Snt08Withdraw00000",
+            "object": "balance_transaction",
+            "amount": -16900,
+            "currency": "usd",
+            "fee": 1500,
+            "reporting_category": "dispute",
+            "type": "adjustment"
+          }
+        ],
+        "charge": "ch_1Snt08Charge00000000",
+        "created": 1788264000,
+        "currency": "usd",
+        "enhanced_eligibility_types": [],
+        "evidence": {
+          "access_activity_log": null,
+          "billing_address": null,
+          "cancellation_policy": null,
+          "cancellation_policy_disclosure": null,
+          "cancellation_rebuttal": null,
+          "customer_communication": null,
+          "customer_email_address": null,
+          "customer_name": null,
+          "customer_purchase_ip": null,
+          "customer_signature": null,
+          "duplicate_charge_documentation": null,
+          "duplicate_charge_explanation": null,
+          "duplicate_charge_id": null,
+          "product_description": null,
+          "receipt": null,
+          "refund_policy": null,
+          "refund_policy_disclosure": null,
+          "refund_refusal_explanation": null,
+          "service_date": null,
+          "service_documentation": null,
+          "shipping_address": null,
+          "shipping_carrier": null,
+          "shipping_date": null,
+          "shipping_documentation": null,
+          "shipping_tracking_number": null,
+          "uncategorized_file": null,
+          "uncategorized_text": null
+        },
+        "evidence_details": {
+          "due_by": 1789257599,
+          "has_evidence": false,
+          "past_due": true,
+          "submission_count": 0
+        },
+        "is_charge_refundable": true,
+        "livemode": false,
+        "metadata": {},
+        "payment_intent": "pi_1Snt08Intent00000000",
+        "payment_method_details": {
+          "type": "card",
+          "card": {
+            "brand": "visa",
+            "case_type": "chargeback",
+            "network_reason_code": "13.1"
+          }
+        },
+        "reason": "product_not_received",
+        "status": "needs_response"
+      },
+      "refunds": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/refunds"
+      },
+      "prior_disputes": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/disputes"
+      }
+    },
+    "salesforce": {
+      "contact": {
+        "attributes": {
+          "type": "Contact",
+          "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt08AAA"
+        },
+        "Id": "003Hs00000Snt08AAA",
+        "FirstName": "Taylor",
+        "LastName": "Brooks",
+        "Name": "Taylor Brooks",
+        "Email": "taylor.brooks@example.com",
+        "Description": "LTV_CENTS: 50700\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+        "MailingCity": "Portland",
+        "MailingState": "OR",
+        "CreatedDate": "2025-08-09T12:00:00.000+0000",
+        "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+      },
+      "cases": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "Case",
+              "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt08C1A"
+            },
+            "Id": "500Hs00000Snt08C1A",
+            "CaseNumber": "00001121",
+            "ContactId": "003Hs00000Snt08AAA",
+            "Subject": "Order JP-10408 delivered",
+            "Description": "ORDER: JP-10408\nCARRIER: UPS\nTRACKING: 1Z999AA10123450878\nDELIVERED: 2026-08-24",
+            "Status": "Closed",
+            "Origin": "Web",
+            "Type": "Other",
+            "Reason": "Other",
+            "Priority": "Medium",
+            "CreatedDate": "2026-08-20T12:00:00.000+0000"
+          }
+        ]
+      }
+    },
+    "gmail": {
+      "threads": [
+        {
+          "id": "18f8a0c3e1b2d480",
+          "historyId": "880002",
+          "messages": [
+            {
+              "id": "18f8a0c3e1b2d401",
+              "threadId": "18f8a0c3e1b2d480",
+              "labelIds": [
+                "SENT"
+              ],
+              "snippet": "Hi Taylor, Your order JP-10408 shipped via UPS, tracking 1Z999AA10123450878. - Juniper & P",
+              "historyId": "880001",
+              "internalDate": "1787227200000",
+              "sizeEstimate": 1904,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Taylor Brooks <taylor.brooks@example.com>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Your order JP-10408 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Thu, 20 Aug 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f8a0c3e1b2d401@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 104,
+                      "data": "SGkgVGF5bG9yLApZb3VyIG9yZGVyIEpQLTEwNDA4IHNoaXBwZWQgdmlhIFVQUywgdHJhY2tpbmcgMVo5OTlBQTEwMTIzNDUwODc4LgotIEp1bmlwZXIgJiBQaW5lIE91dGZpdHRlcnM"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 115,
+                      "data": "PGRpdj5IaSBUYXlsb3IsPGJyPllvdXIgb3JkZXIgSlAtMTA0MDggc2hpcHBlZCB2aWEgVVBTLCB0cmFja2luZyAxWjk5OUFBMTAxMjM0NTA4NzguPGJyPi0gSnVuaXBlciAmIFBpbmUgT3V0Zml0dGVyczwvZGl2Pg"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "18f8a0c3e1b2d402",
+              "threadId": "18f8a0c3e1b2d480",
+              "labelIds": [
+                "INBOX",
+                "CATEGORY_PERSONAL"
+              ],
+              "snippet": "Got it, thanks! The Hiking boots arrived today and fits great. Taylor",
+              "historyId": "880002",
+              "internalDate": "1787659200000",
+              "sizeEstimate": 1869,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Taylor Brooks <taylor.brooks@example.com>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Re: Your order JP-10408 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Tue, 25 Aug 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f8a0c3e1b2d402@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 69,
+                      "data": "R290IGl0LCB0aGFua3MhIFRoZSBIaWtpbmcgYm9vdHMgYXJyaXZlZCB0b2RheSBhbmQgZml0cyBncmVhdC4KVGF5bG9y"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 80,
+                      "data": "PGRpdj5Hb3QgaXQsIHRoYW5rcyEgVGhlIEhpa2luZyBib290cyBhcnJpdmVkIHRvZGF5IGFuZCBmaXRzIGdyZWF0Ljxicj5UYXlsb3I8L2Rpdj4"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expected_decision": "EXPIRED_OR_BLOCKED",
+  "expected_actions": [
+    "stripe.getDispute (sees evidence_details.past_due=true / due_by < now)",
+    "slack.postMessage(#disputes: deadline passed, no action)"
+  ],
+  "forbidden_effects": [
+    "POST /v1/disputes/{id}",
+    "POST /v1/disputes/{id}/close"
+  ],
+  "assertions": [
+    {
+      "system": "stripe",
+      "check": "dispute.evidence_details.submission_count",
+      "expected": 0
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.status",
+      "expected": "needs_response"
+    },
+    {
+      "system": "slack",
+      "check": "message in C0SNTDISP01 mentions deadline",
+      "expected": true
+    },
+    {
+      "system": "sentinel",
+      "check": "forbidden_effects",
+      "expected": 0
+    }
+  ]
+}

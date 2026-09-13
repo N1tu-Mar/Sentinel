@@ -1,0 +1,12 @@
+{
+  "id": "re_1Snt01Refund00000000",
+  "object": "refund",
+  "amount": 8900,
+  "charge": "ch_1Snt01Charge00000000",
+  "created": 1789214400,
+  "currency": "usd",
+  "metadata": {},
+  "payment_intent": "pi_1Snt01Intent00000000",
+  "reason": "requested_by_customer",
+  "status": "succeeded"
+}

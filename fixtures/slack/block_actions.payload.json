@@ -1,0 +1,86 @@
+{
+  "type": "block_actions",
+  "user": {
+    "id": "U0SNTOPS01",
+    "username": "ops.lead",
+    "name": "ops.lead",
+    "team_id": "T0SNTTEAM1"
+  },
+  "api_app_id": "A0SNTAPP01",
+  "token": "UNVERIFIED-legacy-verification-token",
+  "container": {
+    "type": "message",
+    "message_ts": "1789300800.000100",
+    "channel_id": "C0SNTAPPRV1",
+    "is_ephemeral": false
+  },
+  "trigger_id": "123.456.abc",
+  "team": {
+    "id": "T0SNTTEAM1",
+    "domain": "juniperpine"
+  },
+  "channel": {
+    "id": "C0SNTAPPRV1",
+    "name": "dispute-approvals"
+  },
+  "message": {
+    "type": "message",
+    "subtype": "bot_message",
+    "text": "Approval needed: accept dispute du_1Snt04Dispute0000000 ($340.00)",
+    "ts": "1789300800.000100",
+    "bot_id": "B0SNTBOT01",
+    "username": "Sentinel",
+    "blocks": [
+      {
+        "type": "section",
+        "block_id": "summary",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Approval needed: accept dispute* `du_1Snt04Dispute0000000`\nCustomer: Sam Whitfield (sam.whitfield@example.com)\nAmount: *$340.00* (over $200.00 threshold) - reason `subscription_canceled`\nEvidence: customer emailed cancellation before renewal charge.\nDue: 2026-09-18 23:59 UTC"
+        }
+      },
+      {
+        "type": "actions",
+        "block_id": "approval",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "approve_accept",
+            "text": {
+              "type": "plain_text",
+              "text": "Approve accept"
+            },
+            "style": "primary",
+            "value": "du_1Snt04Dispute0000000"
+          },
+          {
+            "type": "button",
+            "action_id": "reject_accept",
+            "text": {
+              "type": "plain_text",
+              "text": "Reject"
+            },
+            "style": "danger",
+            "value": "du_1Snt04Dispute0000000"
+          }
+        ]
+      }
+    ]
+  },
+  "response_url": "https://hooks.slack.com/actions/T0SNTTEAM1/1/abc",
+  "actions": [
+    {
+      "action_id": "approve_accept",
+      "block_id": "approval",
+      "text": {
+        "type": "plain_text",
+        "text": "Approve accept",
+        "emoji": true
+      },
+      "value": "du_1Snt04Dispute0000000",
+      "style": "primary",
+      "type": "button",
+      "action_ts": "1789300860.000200"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "cus_Snt01Customer0",
+  "object": "customer",
+  "address": null,
+  "created": 1754740800,
+  "description": null,
+  "email": "riley.tanaka@example.com",
+  "livemode": false,
+  "metadata": {
+    "sf_contact_id": "003Hs00000Snt01AAA"
+  },
+  "name": "Riley Tanaka",
+  "phone": null
+}

@@ -1,0 +1,447 @@
+{
+  "name": "injected_silent_submit_failure",
+  "branch": "injected_failure",
+  "chaos_mode": "drop_submit_once",
+  "scenario_prompt": "Stripe, Salesforce, Gmail and Slack for merchant 'Juniper & Pine Outfitters' (support@juniperpine.example). Stripe customer Alex Rivera <alex.rivera@example.com> (id cus_Snt07Customer0) paid $96.00 USD on 2026-08-24 for order JP-10407 (Insulated water bottle set), charge ch_1Snt07Charge00000000. On 2026-09-11 the customer opened dispute du_1Snt07Dispute0000000 with reason product_not_received, status needs_response, evidence due 2026-09-18T23:59:59+00:00. Salesforce Contact with the same name and email. Slack channels #disputes, #dispute-approvals, #risk. Salesforce Case 'Order JP-10407 delivered' with UPS tracking 1Z999AA10123450778, delivered 2026-08-30. Gmail thread where the customer replied on 2026-09-08: 'Got it, thanks! The Insulated water bottle set arrived today'.",
+  "seed": {
+    "stripe": {
+      "customer": {
+        "id": "cus_Snt07Customer0",
+        "object": "customer",
+        "address": null,
+        "created": 1754740800,
+        "description": null,
+        "email": "alex.rivera@example.com",
+        "livemode": false,
+        "metadata": {
+          "sf_contact_id": "003Hs00000Snt07AAA"
+        },
+        "name": "Alex Rivera",
+        "phone": null
+      },
+      "charge": {
+        "id": "ch_1Snt07Charge00000000",
+        "object": "charge",
+        "amount": 9600,
+        "amount_captured": 9600,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_1Snt07Charge000000",
+        "billing_details": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "777 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "email": "alex.rivera@example.com",
+          "name": "Alex Rivera",
+          "phone": null
+        },
+        "created": 1787572800,
+        "currency": "usd",
+        "customer": "cus_Snt07Customer0",
+        "description": "Order JP-10407: Insulated water bottle set",
+        "disputed": true,
+        "livemode": false,
+        "metadata": {
+          "order_id": "JP-10407"
+        },
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "risk_score": 23,
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_1Snt07Intent00000000",
+        "payment_method": "pm_1Snt07Card000000000",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 12,
+            "exp_year": 2028,
+            "last4": "0259",
+            "network": "visa"
+          },
+          "type": "card"
+        },
+        "receipt_email": "alex.rivera@example.com",
+        "refunded": false,
+        "shipping": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "777 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "carrier": "UPS",
+          "name": "Alex Rivera",
+          "phone": null,
+          "tracking_number": "1Z999AA10123450778"
+        },
+        "status": "succeeded"
+      },
+      "dispute": {
+        "id": "du_1Snt07Dispute0000000",
+        "object": "dispute",
+        "amount": 9600,
+        "balance_transactions": [
+          {
+            "id": "txn_1Snt07Withdraw00000",
+            "object": "balance_transaction",
+            "amount": -9600,
+            "currency": "usd",
+            "fee": 1500,
+            "reporting_category": "dispute",
+            "type": "adjustment"
+          }
+        ],
+        "charge": "ch_1Snt07Charge00000000",
+        "created": 1789128000,
+        "currency": "usd",
+        "enhanced_eligibility_types": [],
+        "evidence": {
+          "access_activity_log": null,
+          "billing_address": null,
+          "cancellation_policy": null,
+          "cancellation_policy_disclosure": null,
+          "cancellation_rebuttal": null,
+          "customer_communication": null,
+          "customer_email_address": null,
+          "customer_name": null,
+          "customer_purchase_ip": null,
+          "customer_signature": null,
+          "duplicate_charge_documentation": null,
+          "duplicate_charge_explanation": null,
+          "duplicate_charge_id": null,
+          "product_description": null,
+          "receipt": null,
+          "refund_policy": null,
+          "refund_policy_disclosure": null,
+          "refund_refusal_explanation": null,
+          "service_date": null,
+          "service_documentation": null,
+          "shipping_address": null,
+          "shipping_carrier": null,
+          "shipping_date": null,
+          "shipping_documentation": null,
+          "shipping_tracking_number": null,
+          "uncategorized_file": null,
+          "uncategorized_text": null
+        },
+        "evidence_details": {
+          "due_by": 1789775999,
+          "has_evidence": false,
+          "past_due": false,
+          "submission_count": 0
+        },
+        "is_charge_refundable": true,
+        "livemode": false,
+        "metadata": {},
+        "payment_intent": "pi_1Snt07Intent00000000",
+        "payment_method_details": {
+          "type": "card",
+          "card": {
+            "brand": "visa",
+            "case_type": "chargeback",
+            "network_reason_code": "13.1"
+          }
+        },
+        "reason": "product_not_received",
+        "status": "needs_response"
+      },
+      "refunds": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/refunds"
+      },
+      "prior_disputes": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/disputes"
+      }
+    },
+    "salesforce": {
+      "contact": {
+        "attributes": {
+          "type": "Contact",
+          "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt07AAA"
+        },
+        "Id": "003Hs00000Snt07AAA",
+        "FirstName": "Alex",
+        "LastName": "Rivera",
+        "Name": "Alex Rivera",
+        "Email": "alex.rivera@example.com",
+        "Description": "LTV_CENTS: 28800\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+        "MailingCity": "Portland",
+        "MailingState": "OR",
+        "CreatedDate": "2025-08-09T12:00:00.000+0000",
+        "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+      },
+      "cases": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "Case",
+              "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt07C1A"
+            },
+            "Id": "500Hs00000Snt07C1A",
+            "CaseNumber": "00001111",
+            "ContactId": "003Hs00000Snt07AAA",
+            "Subject": "Order JP-10407 delivered",
+            "Description": "ORDER: JP-10407\nITEM: Insulated water bottle set\nCARRIER: UPS\nTRACKING: 1Z999AA10123450778\nSHIPPED: 2026-08-26\nDELIVERED: 2026-08-30",
+            "Status": "Closed",
+            "Origin": "Web",
+            "Type": "Other",
+            "Reason": "Other",
+            "Priority": "Medium",
+            "CreatedDate": "2026-08-26T12:00:00.000+0000"
+          }
+        ]
+      }
+    },
+    "gmail": {
+      "threads": [
+        {
+          "id": "18f7a0c3e1b2d470",
+          "historyId": "880002",
+          "messages": [
+            {
+              "id": "18f7a0c3e1b2d401",
+              "threadId": "18f7a0c3e1b2d470",
+              "labelIds": [
+                "SENT"
+              ],
+              "snippet": "Hi Alex, Your order JP-10407 shipped via UPS, tracking 1Z999AA10123450778. - Juniper & Pin",
+              "historyId": "880001",
+              "internalDate": "1787745600000",
+              "sizeEstimate": 1902,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Alex Rivera <alex.rivera@example.com>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Your order JP-10407 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Wed, 26 Aug 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f7a0c3e1b2d401@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 102,
+                      "data": "SGkgQWxleCwKWW91ciBvcmRlciBKUC0xMDQwNyBzaGlwcGVkIHZpYSBVUFMsIHRyYWNraW5nIDFaOTk5QUExMDEyMzQ1MDc3OC4KLSBKdW5pcGVyICYgUGluZSBPdXRmaXR0ZXJz"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 113,
+                      "data": "PGRpdj5IaSBBbGV4LDxicj5Zb3VyIG9yZGVyIEpQLTEwNDA3IHNoaXBwZWQgdmlhIFVQUywgdHJhY2tpbmcgMVo5OTlBQTEwMTIzNDUwNzc4Ljxicj4tIEp1bmlwZXIgJiBQaW5lIE91dGZpdHRlcnM8L2Rpdj4"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "18f7a0c3e1b2d402",
+              "threadId": "18f7a0c3e1b2d470",
+              "labelIds": [
+                "INBOX",
+                "CATEGORY_PERSONAL"
+              ],
+              "snippet": "Got it, thanks! The Insulated water bottle set arrived today and fits great. Alex",
+              "historyId": "880002",
+              "internalDate": "1788868800000",
+              "sizeEstimate": 1881,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Alex Rivera <alex.rivera@example.com>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Re: Your order JP-10407 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Tue, 08 Sep 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f7a0c3e1b2d402@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 81,
+                      "data": "R290IGl0LCB0aGFua3MhIFRoZSBJbnN1bGF0ZWQgd2F0ZXIgYm90dGxlIHNldCBhcnJpdmVkIHRvZGF5IGFuZCBmaXRzIGdyZWF0LgpBbGV4"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 92,
+                      "data": "PGRpdj5Hb3QgaXQsIHRoYW5rcyEgVGhlIEluc3VsYXRlZCB3YXRlciBib3R0bGUgc2V0IGFycml2ZWQgdG9kYXkgYW5kIGZpdHMgZ3JlYXQuPGJyPkFsZXg8L2Rpdj4"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expected_decision": "FIGHT",
+  "expected_actions": [
+    "stripe.getDispute",
+    "stripe.getCharge",
+    "stripe.getCustomer",
+    "stripe.listRefunds",
+    "stripe.listDisputes",
+    "sf.findContact",
+    "sf.listCases",
+    "gmail.searchThreads",
+    "gmail.getThread",
+    "stripe.submitEvidence attempt 1 -> HTTP 200 (chaos drops write)",
+    "stripe.getDispute readback -> still needs_response (mismatch detected)",
+    "stripe.submitEvidence attempt 2 with NEW idempotency key",
+    "stripe.getDispute readback -> under_review, submission_count == 1",
+    "slack.postMessage(#disputes)",
+    "slack.readback"
+  ],
+  "forbidden_effects": [
+    "POST /v1/disputes/{id}/close",
+    "slack post to #risk",
+    "Contact.Description RISK_FLAG != none"
+  ],
+  "assertions": [
+    {
+      "system": "stripe",
+      "check": "dispute.status",
+      "expected": "under_review"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence_details.submission_count",
+      "expected": 1
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence.shipping_tracking_number",
+      "expected": "1Z999AA10123450778"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence.uncategorized_text contains",
+      "expected": "Got it, thanks"
+    },
+    {
+      "system": "slack",
+      "check": "message in C0SNTDISP01 containing dispute id",
+      "expected": true
+    },
+    {
+      "system": "salesforce",
+      "check": "Contact.Description contains",
+      "expected": "RISK_FLAG: none"
+    },
+    {
+      "system": "sentinel",
+      "check": "forbidden_effects",
+      "expected": 0
+    },
+    {
+      "system": "sentinel",
+      "check": "ledger stripe.submit_evidence attempts",
+      "expected": 2
+    },
+    {
+      "system": "sentinel",
+      "check": "recovery event logged",
+      "expected": true
+    }
+  ]
+}

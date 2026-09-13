@@ -1,0 +1,145 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "du_1Snt05aDispute0000000",
+      "object": "dispute",
+      "amount": 6400,
+      "balance_transactions": [
+        {
+          "id": "txn_1Snt05aWithdraw00000",
+          "object": "balance_transaction",
+          "amount": -6400,
+          "currency": "usd",
+          "fee": 1500,
+          "reporting_category": "dispute",
+          "type": "adjustment"
+        }
+      ],
+      "charge": "ch_1Snt05aCharge00000000",
+      "created": 1783252800,
+      "currency": "usd",
+      "enhanced_eligibility_types": [],
+      "evidence": {
+        "access_activity_log": null,
+        "billing_address": null,
+        "cancellation_policy": null,
+        "cancellation_policy_disclosure": null,
+        "cancellation_rebuttal": null,
+        "customer_communication": null,
+        "customer_email_address": null,
+        "customer_name": null,
+        "customer_purchase_ip": null,
+        "customer_signature": null,
+        "duplicate_charge_documentation": null,
+        "duplicate_charge_explanation": null,
+        "duplicate_charge_id": null,
+        "product_description": null,
+        "receipt": null,
+        "refund_policy": null,
+        "refund_policy_disclosure": null,
+        "refund_refusal_explanation": null,
+        "service_date": null,
+        "service_documentation": null,
+        "shipping_address": null,
+        "shipping_carrier": null,
+        "shipping_date": null,
+        "shipping_documentation": null,
+        "shipping_tracking_number": null,
+        "uncategorized_file": null,
+        "uncategorized_text": null
+      },
+      "evidence_details": {
+        "due_by": 1783944000,
+        "has_evidence": false,
+        "past_due": true,
+        "submission_count": 0
+      },
+      "is_charge_refundable": false,
+      "livemode": false,
+      "metadata": {},
+      "payment_intent": "pi_1Snt05aIntent00000000",
+      "payment_method_details": {
+        "type": "card",
+        "card": {
+          "brand": "visa",
+          "case_type": "chargeback",
+          "network_reason_code": "13.1"
+        }
+      },
+      "reason": "product_not_received",
+      "status": "lost"
+    },
+    {
+      "id": "du_1Snt05bDispute0000000",
+      "object": "dispute",
+      "amount": 5200,
+      "balance_transactions": [
+        {
+          "id": "txn_1Snt05bWithdraw00000",
+          "object": "balance_transaction",
+          "amount": -5200,
+          "currency": "usd",
+          "fee": 1500,
+          "reporting_category": "dispute",
+          "type": "adjustment"
+        }
+      ],
+      "charge": "ch_1Snt05bCharge00000000",
+      "created": 1786276800,
+      "currency": "usd",
+      "enhanced_eligibility_types": [],
+      "evidence": {
+        "access_activity_log": null,
+        "billing_address": null,
+        "cancellation_policy": null,
+        "cancellation_policy_disclosure": null,
+        "cancellation_rebuttal": null,
+        "customer_communication": null,
+        "customer_email_address": null,
+        "customer_name": null,
+        "customer_purchase_ip": null,
+        "customer_signature": null,
+        "duplicate_charge_documentation": null,
+        "duplicate_charge_explanation": null,
+        "duplicate_charge_id": null,
+        "product_description": null,
+        "receipt": null,
+        "refund_policy": null,
+        "refund_policy_disclosure": null,
+        "refund_refusal_explanation": null,
+        "service_date": null,
+        "service_documentation": null,
+        "shipping_address": null,
+        "shipping_carrier": null,
+        "shipping_date": null,
+        "shipping_documentation": null,
+        "shipping_tracking_number": null,
+        "uncategorized_file": null,
+        "uncategorized_text": null
+      },
+      "evidence_details": {
+        "due_by": 1786968000,
+        "has_evidence": false,
+        "past_due": true,
+        "submission_count": 0
+      },
+      "is_charge_refundable": false,
+      "livemode": false,
+      "metadata": {},
+      "payment_intent": "pi_1Snt05bIntent00000000",
+      "payment_method_details": {
+        "type": "card",
+        "card": {
+          "brand": "visa",
+          "case_type": "chargeback",
+          "network_reason_code": "10.4"
+        }
+      },
+      "reason": "fraudulent",
+      "status": "lost"
+    }
+  ],
+  "has_more": false,
+  "url": "/v1/disputes"
+}

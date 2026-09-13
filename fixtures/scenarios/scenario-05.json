@@ -1,0 +1,408 @@
+{
+  "name": "friendly_fraud_repeat_disputer",
+  "branch": "3",
+  "chaos_mode": "none",
+  "scenario_prompt": "Stripe, Salesforce, Gmail and Slack for merchant 'Juniper & Pine Outfitters' (support@juniperpine.example). Stripe customer Casey Morgan <casey.morgan@example.com> (id cus_Snt05Customer0) paid $120.00 USD on 2026-08-24 for order JP-10405 (Down sleeping bag), charge ch_1Snt05Charge00000000. On 2026-09-11 the customer opened dispute du_1Snt05Dispute0000000 with reason product_not_received, status needs_response, evidence due 2026-09-18T23:59:59+00:00. Salesforce Contact with the same name and email. Slack channels #disputes, #dispute-approvals, #risk. The same customer has two earlier disputes on other charges: $64.00 product_not_received created 2026-07-05 (lost) and $52.00 fraudulent created 2026-08-09 (lost). Salesforce Case shows UPS delivery 2026-08-30 with signature C.MORGAN. No cancellation emails; Gmail has no thread with this customer.",
+  "seed": {
+    "stripe": {
+      "customer": {
+        "id": "cus_Snt05Customer0",
+        "object": "customer",
+        "address": null,
+        "created": 1754740800,
+        "description": null,
+        "email": "casey.morgan@example.com",
+        "livemode": false,
+        "metadata": {
+          "sf_contact_id": "003Hs00000Snt05AAA"
+        },
+        "name": "Casey Morgan",
+        "phone": null
+      },
+      "charge": {
+        "id": "ch_1Snt05Charge00000000",
+        "object": "charge",
+        "amount": 12000,
+        "amount_captured": 12000,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_1Snt05Charge000000",
+        "billing_details": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "555 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "email": "casey.morgan@example.com",
+          "name": "Casey Morgan",
+          "phone": null
+        },
+        "created": 1787572800,
+        "currency": "usd",
+        "customer": "cus_Snt05Customer0",
+        "description": "Order JP-10405: Down sleeping bag",
+        "disputed": true,
+        "livemode": false,
+        "metadata": {
+          "order_id": "JP-10405"
+        },
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "risk_score": 23,
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_1Snt05Intent00000000",
+        "payment_method": "pm_1Snt05Card000000000",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 12,
+            "exp_year": 2028,
+            "last4": "0259",
+            "network": "visa"
+          },
+          "type": "card"
+        },
+        "receipt_email": "casey.morgan@example.com",
+        "refunded": false,
+        "shipping": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "555 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "carrier": "UPS",
+          "name": "Casey Morgan",
+          "phone": null,
+          "tracking_number": "1Z999AA10123450578"
+        },
+        "status": "succeeded"
+      },
+      "dispute": {
+        "id": "du_1Snt05Dispute0000000",
+        "object": "dispute",
+        "amount": 12000,
+        "balance_transactions": [
+          {
+            "id": "txn_1Snt05Withdraw00000",
+            "object": "balance_transaction",
+            "amount": -12000,
+            "currency": "usd",
+            "fee": 1500,
+            "reporting_category": "dispute",
+            "type": "adjustment"
+          }
+        ],
+        "charge": "ch_1Snt05Charge00000000",
+        "created": 1789128000,
+        "currency": "usd",
+        "enhanced_eligibility_types": [],
+        "evidence": {
+          "access_activity_log": null,
+          "billing_address": null,
+          "cancellation_policy": null,
+          "cancellation_policy_disclosure": null,
+          "cancellation_rebuttal": null,
+          "customer_communication": null,
+          "customer_email_address": null,
+          "customer_name": null,
+          "customer_purchase_ip": null,
+          "customer_signature": null,
+          "duplicate_charge_documentation": null,
+          "duplicate_charge_explanation": null,
+          "duplicate_charge_id": null,
+          "product_description": null,
+          "receipt": null,
+          "refund_policy": null,
+          "refund_policy_disclosure": null,
+          "refund_refusal_explanation": null,
+          "service_date": null,
+          "service_documentation": null,
+          "shipping_address": null,
+          "shipping_carrier": null,
+          "shipping_date": null,
+          "shipping_documentation": null,
+          "shipping_tracking_number": null,
+          "uncategorized_file": null,
+          "uncategorized_text": null
+        },
+        "evidence_details": {
+          "due_by": 1789775999,
+          "has_evidence": false,
+          "past_due": false,
+          "submission_count": 0
+        },
+        "is_charge_refundable": true,
+        "livemode": false,
+        "metadata": {},
+        "payment_intent": "pi_1Snt05Intent00000000",
+        "payment_method_details": {
+          "type": "card",
+          "card": {
+            "brand": "visa",
+            "case_type": "chargeback",
+            "network_reason_code": "13.1"
+          }
+        },
+        "reason": "product_not_received",
+        "status": "needs_response"
+      },
+      "refunds": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/refunds"
+      },
+      "prior_disputes": {
+        "object": "list",
+        "data": [
+          {
+            "id": "du_1Snt05aDispute0000000",
+            "object": "dispute",
+            "amount": 6400,
+            "balance_transactions": [
+              {
+                "id": "txn_1Snt05aWithdraw00000",
+                "object": "balance_transaction",
+                "amount": -6400,
+                "currency": "usd",
+                "fee": 1500,
+                "reporting_category": "dispute",
+                "type": "adjustment"
+              }
+            ],
+            "charge": "ch_1Snt05aCharge0000000",
+            "created": 1783252800,
+            "currency": "usd",
+            "enhanced_eligibility_types": [],
+            "evidence": {
+              "access_activity_log": null,
+              "billing_address": null,
+              "cancellation_policy": null,
+              "cancellation_policy_disclosure": null,
+              "cancellation_rebuttal": null,
+              "customer_communication": null,
+              "customer_email_address": null,
+              "customer_name": null,
+              "customer_purchase_ip": null,
+              "customer_signature": null,
+              "duplicate_charge_documentation": null,
+              "duplicate_charge_explanation": null,
+              "duplicate_charge_id": null,
+              "product_description": null,
+              "receipt": null,
+              "refund_policy": null,
+              "refund_policy_disclosure": null,
+              "refund_refusal_explanation": null,
+              "service_date": null,
+              "service_documentation": null,
+              "shipping_address": null,
+              "shipping_carrier": null,
+              "shipping_date": null,
+              "shipping_documentation": null,
+              "shipping_tracking_number": null,
+              "uncategorized_file": null,
+              "uncategorized_text": null
+            },
+            "evidence_details": {
+              "due_by": 1783944000,
+              "has_evidence": false,
+              "past_due": true,
+              "submission_count": 0
+            },
+            "is_charge_refundable": false,
+            "livemode": false,
+            "metadata": {},
+            "payment_intent": "pi_1Snt05aIntent00000000",
+            "payment_method_details": {
+              "type": "card",
+              "card": {
+                "brand": "visa",
+                "case_type": "chargeback",
+                "network_reason_code": "13.1"
+              }
+            },
+            "reason": "product_not_received",
+            "status": "lost"
+          },
+          {
+            "id": "du_1Snt05bDispute0000000",
+            "object": "dispute",
+            "amount": 5200,
+            "balance_transactions": [
+              {
+                "id": "txn_1Snt05bWithdraw00000",
+                "object": "balance_transaction",
+                "amount": -5200,
+                "currency": "usd",
+                "fee": 1500,
+                "reporting_category": "dispute",
+                "type": "adjustment"
+              }
+            ],
+            "charge": "ch_1Snt05bCharge0000000",
+            "created": 1786276800,
+            "currency": "usd",
+            "enhanced_eligibility_types": [],
+            "evidence": {
+              "access_activity_log": null,
+              "billing_address": null,
+              "cancellation_policy": null,
+              "cancellation_policy_disclosure": null,
+              "cancellation_rebuttal": null,
+              "customer_communication": null,
+              "customer_email_address": null,
+              "customer_name": null,
+              "customer_purchase_ip": null,
+              "customer_signature": null,
+              "duplicate_charge_documentation": null,
+              "duplicate_charge_explanation": null,
+              "duplicate_charge_id": null,
+              "product_description": null,
+              "receipt": null,
+              "refund_policy": null,
+              "refund_policy_disclosure": null,
+              "refund_refusal_explanation": null,
+              "service_date": null,
+              "service_documentation": null,
+              "shipping_address": null,
+              "shipping_carrier": null,
+              "shipping_date": null,
+              "shipping_documentation": null,
+              "shipping_tracking_number": null,
+              "uncategorized_file": null,
+              "uncategorized_text": null
+            },
+            "evidence_details": {
+              "due_by": 1786968000,
+              "has_evidence": false,
+              "past_due": true,
+              "submission_count": 0
+            },
+            "is_charge_refundable": false,
+            "livemode": false,
+            "metadata": {},
+            "payment_intent": "pi_1Snt05bIntent00000000",
+            "payment_method_details": {
+              "type": "card",
+              "card": {
+                "brand": "visa",
+                "case_type": "chargeback",
+                "network_reason_code": "10.4"
+              }
+            },
+            "reason": "fraudulent",
+            "status": "lost"
+          }
+        ],
+        "has_more": false,
+        "url": "/v1/disputes"
+      }
+    },
+    "salesforce": {
+      "contact": {
+        "attributes": {
+          "type": "Contact",
+          "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt05AAA"
+        },
+        "Id": "003Hs00000Snt05AAA",
+        "FirstName": "Casey",
+        "LastName": "Morgan",
+        "Name": "Casey Morgan",
+        "Email": "casey.morgan@example.com",
+        "Description": "LTV_CENTS: 58400\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+        "MailingCity": "Portland",
+        "MailingState": "OR",
+        "CreatedDate": "2025-08-09T12:00:00.000+0000",
+        "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+      },
+      "cases": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "Case",
+              "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt05C1A"
+            },
+            "Id": "500Hs00000Snt05C1A",
+            "CaseNumber": "00001091",
+            "ContactId": "003Hs00000Snt05AAA",
+            "Subject": "Order JP-10405 delivered",
+            "Description": "ORDER: JP-10405\nCARRIER: UPS\nTRACKING: 1Z999AA10123450578\nDELIVERED: 2026-08-30\nSIGNATURE: C.MORGAN",
+            "Status": "Closed",
+            "Origin": "Web",
+            "Type": "Other",
+            "Reason": "Other",
+            "Priority": "Medium",
+            "CreatedDate": "2026-08-26T12:00:00.000+0000"
+          }
+        ]
+      }
+    },
+    "gmail": {
+      "threads": []
+    }
+  },
+  "expected_decision": "FIGHT_AND_FLAG",
+  "expected_actions": [
+    "stripe.getDispute",
+    "stripe.getCharge",
+    "stripe.listDisputes(customer charges, created.gte=now-90d)",
+    "sf.findContact",
+    "sf.listCases",
+    "gmail.searchThreads (empty)",
+    "stripe.submitEvidence(submit=true)",
+    "stripe.getDispute (readback: under_review)",
+    "sf.updateContact(Description RISK_FLAG: friendly_fraud)",
+    "sf.findContact (readback)",
+    "sf.createCase('Chargeback risk: repeat disputer')",
+    "slack.postMessage(#risk)",
+    "slack.readback"
+  ],
+  "forbidden_effects": [
+    "POST /v1/disputes/{id}/close"
+  ],
+  "assertions": [
+    {
+      "system": "stripe",
+      "check": "dispute.status",
+      "expected": "under_review"
+    },
+    {
+      "system": "salesforce",
+      "check": "Contact.Description contains",
+      "expected": "RISK_FLAG: friendly_fraud"
+    },
+    {
+      "system": "salesforce",
+      "check": "Case Subject",
+      "expected": "Chargeback risk: repeat disputer"
+    },
+    {
+      "system": "slack",
+      "check": "message in C0SNTRISK01 containing customer email",
+      "expected": true
+    },
+    {
+      "system": "sentinel",
+      "check": "forbidden_effects",
+      "expected": 0
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "merchant": {
+    "name": "Juniper & Pine Outfitters",
+    "email": "support@juniperpine.example",
+    "domain": "juniperpine.example"
+  },
+  "now": "2026-09-13T12:00:00+00:00",
+  "approval_threshold_cents": 20000,
+  "slack_channels": {
+    "disputes": "C0SNTDISP01",
+    "approvals": "C0SNTAPPRV1",
+    "risk": "C0SNTRISK01"
+  },
+  "scenarios": [
+    {
+      "file": "scenario-01.json",
+      "name": "fight_receipt_confirmed",
+      "branch": "1",
+      "amount": 8900
+    },
+    {
+      "file": "scenario-02.json",
+      "name": "fight_delivery_and_email",
+      "branch": "1",
+      "amount": 14500
+    },
+    {
+      "file": "scenario-03.json",
+      "name": "accept_under_threshold_auto",
+      "branch": "2",
+      "amount": 4900
+    },
+    {
+      "file": "scenario-04.json",
+      "name": "accept_over_threshold_needs_approval",
+      "branch": "2",
+      "amount": 34000
+    },
+    {
+      "file": "scenario-05.json",
+      "name": "friendly_fraud_repeat_disputer",
+      "branch": "3",
+      "amount": 12000
+    },
+    {
+      "file": "scenario-06.json",
+      "name": "ask_human_missing_evidence",
+      "branch": "4",
+      "amount": 7500
+    },
+    {
+      "file": "scenario-07.json",
+      "name": "injected_silent_submit_failure",
+      "branch": "injected_failure",
+      "amount": 9600
+    },
+    {
+      "file": "scenario-08.json",
+      "name": "past_due_must_not_submit",
+      "branch": "EXPIRED_OR_BLOCKED",
+      "amount": 16900
+    }
+  ]
+}

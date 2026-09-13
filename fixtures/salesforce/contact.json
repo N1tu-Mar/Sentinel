@@ -1,0 +1,16 @@
+{
+  "attributes": {
+    "type": "Contact",
+    "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt01AAA"
+  },
+  "Id": "003Hs00000Snt01AAA",
+  "FirstName": "Riley",
+  "LastName": "Tanaka",
+  "Name": "Riley Tanaka",
+  "Email": "riley.tanaka@example.com",
+  "Description": "LTV_CENTS: 48200\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+  "MailingCity": "Portland",
+  "MailingState": "OR",
+  "CreatedDate": "2025-08-09T12:00:00.000+0000",
+  "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+}

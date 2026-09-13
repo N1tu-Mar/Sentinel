@@ -1,0 +1,9 @@
+{
+  "ContactId": "003Hs00000Snt05AAA",
+  "Subject": "Chargeback risk: repeat disputer",
+  "Description": "Dispute du_1Snt05Dispute0000000 (product_not_received, $120.00). 2 prior disputes in 90 days. Delivery confirmed by UPS. Evidence submitted.",
+  "Status": "New",
+  "Origin": "Web",
+  "Type": "Other",
+  "Priority": "High"
+}

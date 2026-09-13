@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "channels": [
+    {
+      "id": "C0SNTDISP01",
+      "name": "disputes",
+      "is_channel": true,
+      "is_member": true
+    },
+    {
+      "id": "C0SNTAPPRV1",
+      "name": "dispute-approvals",
+      "is_channel": true,
+      "is_member": true
+    },
+    {
+      "id": "C0SNTRISK01",
+      "name": "risk",
+      "is_channel": true,
+      "is_member": true
+    }
+  ],
+  "response_metadata": {
+    "next_cursor": ""
+  }
+}

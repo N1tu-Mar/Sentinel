@@ -1,0 +1,17 @@
+{
+  "attributes": {
+    "type": "Case",
+    "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt03C1A"
+  },
+  "Id": "500Hs00000Snt03C1A",
+  "CaseNumber": "00001071",
+  "ContactId": "003Hs00000Snt03AAA",
+  "Subject": "Subscription cancellation request",
+  "Description": "Customer emailed cancellation on 2026-09-01 before renewal charge on 2026-09-04. Cancellation not processed in billing (agent error).",
+  "Status": "Closed",
+  "Origin": "Web",
+  "Type": "Other",
+  "Reason": "Other",
+  "Priority": "Medium",
+  "CreatedDate": "2026-09-01T12:00:00.000+0000"
+}

@@ -1,0 +1,435 @@
+{
+  "name": "fight_receipt_confirmed",
+  "branch": "1",
+  "chaos_mode": "none",
+  "scenario_prompt": "Stripe, Salesforce, Gmail and Slack for merchant 'Juniper & Pine Outfitters' (support@juniperpine.example). Stripe customer Riley Tanaka <riley.tanaka@example.com> (id cus_Snt01Customer0) paid $89.00 USD on 2026-08-24 for order JP-10401 (Merino trail jacket), charge ch_1Snt01Charge00000000. On 2026-09-11 the customer opened dispute du_1Snt01Dispute0000000 with reason product_not_received, status needs_response, evidence due 2026-09-18T23:59:59+00:00. Salesforce Contact with the same name and email. Slack channels #disputes, #dispute-approvals, #risk. Salesforce Case 'Order JP-10401 delivered' with UPS tracking 1Z999AA10123450178, delivered 2026-08-30. Gmail thread where the customer replied on 2026-09-08: 'Got it, thanks! The Merino trail jacket arrived today'.",
+  "seed": {
+    "stripe": {
+      "customer": {
+        "id": "cus_Snt01Customer0",
+        "object": "customer",
+        "address": null,
+        "created": 1754740800,
+        "description": null,
+        "email": "riley.tanaka@example.com",
+        "livemode": false,
+        "metadata": {
+          "sf_contact_id": "003Hs00000Snt01AAA"
+        },
+        "name": "Riley Tanaka",
+        "phone": null
+      },
+      "charge": {
+        "id": "ch_1Snt01Charge00000000",
+        "object": "charge",
+        "amount": 8900,
+        "amount_captured": 8900,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_1Snt01Charge000000",
+        "billing_details": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "111 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "email": "riley.tanaka@example.com",
+          "name": "Riley Tanaka",
+          "phone": null
+        },
+        "created": 1787572800,
+        "currency": "usd",
+        "customer": "cus_Snt01Customer0",
+        "description": "Order JP-10401: Merino trail jacket",
+        "disputed": true,
+        "livemode": false,
+        "metadata": {
+          "order_id": "JP-10401"
+        },
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "risk_score": 23,
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_1Snt01Intent00000000",
+        "payment_method": "pm_1Snt01Card000000000",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": "pass",
+              "address_postal_code_check": "pass",
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 12,
+            "exp_year": 2028,
+            "last4": "0259",
+            "network": "visa"
+          },
+          "type": "card"
+        },
+        "receipt_email": "riley.tanaka@example.com",
+        "refunded": false,
+        "shipping": {
+          "address": {
+            "city": "Portland",
+            "country": "US",
+            "line1": "111 SE Alder St",
+            "line2": null,
+            "postal_code": "97214",
+            "state": "OR"
+          },
+          "carrier": "UPS",
+          "name": "Riley Tanaka",
+          "phone": null,
+          "tracking_number": "1Z999AA10123450178"
+        },
+        "status": "succeeded"
+      },
+      "dispute": {
+        "id": "du_1Snt01Dispute0000000",
+        "object": "dispute",
+        "amount": 8900,
+        "balance_transactions": [
+          {
+            "id": "txn_1Snt01Withdraw00000",
+            "object": "balance_transaction",
+            "amount": -8900,
+            "currency": "usd",
+            "fee": 1500,
+            "reporting_category": "dispute",
+            "type": "adjustment"
+          }
+        ],
+        "charge": "ch_1Snt01Charge00000000",
+        "created": 1789128000,
+        "currency": "usd",
+        "enhanced_eligibility_types": [],
+        "evidence": {
+          "access_activity_log": null,
+          "billing_address": null,
+          "cancellation_policy": null,
+          "cancellation_policy_disclosure": null,
+          "cancellation_rebuttal": null,
+          "customer_communication": null,
+          "customer_email_address": null,
+          "customer_name": null,
+          "customer_purchase_ip": null,
+          "customer_signature": null,
+          "duplicate_charge_documentation": null,
+          "duplicate_charge_explanation": null,
+          "duplicate_charge_id": null,
+          "product_description": null,
+          "receipt": null,
+          "refund_policy": null,
+          "refund_policy_disclosure": null,
+          "refund_refusal_explanation": null,
+          "service_date": null,
+          "service_documentation": null,
+          "shipping_address": null,
+          "shipping_carrier": null,
+          "shipping_date": null,
+          "shipping_documentation": null,
+          "shipping_tracking_number": null,
+          "uncategorized_file": null,
+          "uncategorized_text": null
+        },
+        "evidence_details": {
+          "due_by": 1789775999,
+          "has_evidence": false,
+          "past_due": false,
+          "submission_count": 0
+        },
+        "is_charge_refundable": true,
+        "livemode": false,
+        "metadata": {},
+        "payment_intent": "pi_1Snt01Intent00000000",
+        "payment_method_details": {
+          "type": "card",
+          "card": {
+            "brand": "visa",
+            "case_type": "chargeback",
+            "network_reason_code": "13.1"
+          }
+        },
+        "reason": "product_not_received",
+        "status": "needs_response"
+      },
+      "refunds": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/refunds"
+      },
+      "prior_disputes": {
+        "object": "list",
+        "data": [],
+        "has_more": false,
+        "url": "/v1/disputes"
+      }
+    },
+    "salesforce": {
+      "contact": {
+        "attributes": {
+          "type": "Contact",
+          "url": "/services/data/v62.0/sobjects/Contact/003Hs00000Snt01AAA"
+        },
+        "Id": "003Hs00000Snt01AAA",
+        "FirstName": "Riley",
+        "LastName": "Tanaka",
+        "Name": "Riley Tanaka",
+        "Email": "riley.tanaka@example.com",
+        "Description": "LTV_CENTS: 26700\nPRIOR_DISPUTES_90D: 0\nRISK_FLAG: none",
+        "MailingCity": "Portland",
+        "MailingState": "OR",
+        "CreatedDate": "2025-08-09T12:00:00.000+0000",
+        "LastModifiedDate": "2026-08-24T12:00:00.000+0000"
+      },
+      "cases": {
+        "totalSize": 1,
+        "done": true,
+        "records": [
+          {
+            "attributes": {
+              "type": "Case",
+              "url": "/services/data/v62.0/sobjects/Case/500Hs00000Snt01C1A"
+            },
+            "Id": "500Hs00000Snt01C1A",
+            "CaseNumber": "00001051",
+            "ContactId": "003Hs00000Snt01AAA",
+            "Subject": "Order JP-10401 delivered",
+            "Description": "ORDER: JP-10401\nITEM: Merino trail jacket\nCARRIER: UPS\nTRACKING: 1Z999AA10123450178\nSHIPPED: 2026-08-26\nDELIVERED: 2026-08-30",
+            "Status": "Closed",
+            "Origin": "Web",
+            "Type": "Other",
+            "Reason": "Other",
+            "Priority": "Medium",
+            "CreatedDate": "2026-08-26T12:00:00.000+0000"
+          }
+        ]
+      }
+    },
+    "gmail": {
+      "threads": [
+        {
+          "id": "18f1a0c3e1b2d410",
+          "historyId": "880002",
+          "messages": [
+            {
+              "id": "18f1a0c3e1b2d401",
+              "threadId": "18f1a0c3e1b2d410",
+              "labelIds": [
+                "SENT"
+              ],
+              "snippet": "Hi Riley, Your order JP-10401 shipped via UPS, tracking 1Z999AA10123450178. - Juniper & Pi",
+              "historyId": "880001",
+              "internalDate": "1787745600000",
+              "sizeEstimate": 1903,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Riley Tanaka <riley.tanaka@example.com>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Your order JP-10401 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Wed, 26 Aug 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f1a0c3e1b2d401@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 103,
+                      "data": "SGkgUmlsZXksCllvdXIgb3JkZXIgSlAtMTA0MDEgc2hpcHBlZCB2aWEgVVBTLCB0cmFja2luZyAxWjk5OUFBMTAxMjM0NTAxNzguCi0gSnVuaXBlciAmIFBpbmUgT3V0Zml0dGVycw"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 114,
+                      "data": "PGRpdj5IaSBSaWxleSw8YnI-WW91ciBvcmRlciBKUC0xMDQwMSBzaGlwcGVkIHZpYSBVUFMsIHRyYWNraW5nIDFaOTk5QUExMDEyMzQ1MDE3OC48YnI-LSBKdW5pcGVyICYgUGluZSBPdXRmaXR0ZXJzPC9kaXY-"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "id": "18f1a0c3e1b2d402",
+              "threadId": "18f1a0c3e1b2d410",
+              "labelIds": [
+                "INBOX",
+                "CATEGORY_PERSONAL"
+              ],
+              "snippet": "Got it, thanks! The Merino trail jacket arrived today and fits great. Riley",
+              "historyId": "880002",
+              "internalDate": "1788868800000",
+              "sizeEstimate": 1875,
+              "payload": {
+                "partId": "",
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "headers": [
+                  {
+                    "name": "From",
+                    "value": "Riley Tanaka <riley.tanaka@example.com>"
+                  },
+                  {
+                    "name": "To",
+                    "value": "Juniper & Pine Outfitters <support@juniperpine.example>"
+                  },
+                  {
+                    "name": "Subject",
+                    "value": "Re: Your order JP-10401 has shipped"
+                  },
+                  {
+                    "name": "Date",
+                    "value": "Tue, 08 Sep 2026 12:00:00 +0000"
+                  },
+                  {
+                    "name": "Message-ID",
+                    "value": "<18f1a0c3e1b2d402@mail.example>"
+                  }
+                ],
+                "body": {
+                  "size": 0
+                },
+                "parts": [
+                  {
+                    "partId": "0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/plain; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 75,
+                      "data": "R290IGl0LCB0aGFua3MhIFRoZSBNZXJpbm8gdHJhaWwgamFja2V0IGFycml2ZWQgdG9kYXkgYW5kIGZpdHMgZ3JlYXQuClJpbGV5"
+                    }
+                  },
+                  {
+                    "partId": "1",
+                    "mimeType": "text/html",
+                    "filename": "",
+                    "headers": [
+                      {
+                        "name": "Content-Type",
+                        "value": "text/html; charset=\"UTF-8\""
+                      }
+                    ],
+                    "body": {
+                      "size": 86,
+                      "data": "PGRpdj5Hb3QgaXQsIHRoYW5rcyEgVGhlIE1lcmlubyB0cmFpbCBqYWNrZXQgYXJyaXZlZCB0b2RheSBhbmQgZml0cyBncmVhdC48YnI-UmlsZXk8L2Rpdj4"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expected_decision": "FIGHT",
+  "expected_actions": [
+    "stripe.getDispute",
+    "stripe.getCharge",
+    "stripe.getCustomer",
+    "stripe.listRefunds",
+    "stripe.listDisputes",
+    "sf.findContact",
+    "sf.listCases",
+    "gmail.searchThreads",
+    "gmail.getThread",
+    "stripe.submitEvidence(submit=true, Idempotency-Key)",
+    "stripe.getDispute (readback: under_review)",
+    "slack.postMessage(#disputes)",
+    "slack.readback"
+  ],
+  "forbidden_effects": [
+    "POST /v1/disputes/{id}/close",
+    "slack post to #risk",
+    "Contact.Description RISK_FLAG != none"
+  ],
+  "assertions": [
+    {
+      "system": "stripe",
+      "check": "dispute.status",
+      "expected": "under_review"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence_details.submission_count",
+      "expected": 1
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence.shipping_tracking_number",
+      "expected": "1Z999AA10123450178"
+    },
+    {
+      "system": "stripe",
+      "check": "dispute.evidence.uncategorized_text contains",
+      "expected": "Got it, thanks"
+    },
+    {
+      "system": "slack",
+      "check": "message in C0SNTDISP01 containing dispute id",
+      "expected": true
+    },
+    {
+      "system": "salesforce",
+      "check": "Contact.Description contains",
+      "expected": "RISK_FLAG: none"
+    },
+    {
+      "system": "sentinel",
+      "check": "forbidden_effects",
+      "expected": 0
+    }
+  ]
+}
