@@ -260,4 +260,42 @@ assert.ok(allPass(awaiting, state({ disputeStatus: "needs_response", submissionC
   assert.equal(m.taskSuccessRate, 100);
 }
 
+// --- local sandbox: the real adapters over HTTP against a stateful Salesforce/Gmail/Slack stand-in ---
+{
+  const { createSandbox, sandboxEnv } = await import("@/sandbox/server");
+  const sfa = await import("@/adapters/salesforce");
+  const gm = await import("@/adapters/gmail");
+  const sl = await import("@/adapters/slack");
+  const { server } = createSandbox();
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  Object.assign(process.env, sandboxEnv(`http://127.0.0.1:${(server.address() as { port: number }).port}`));
+  sl.clearChannelCache();
+
+  const { id } = await sfa.createContact({ firstName: "Alex", lastName: "Rivera", email: "alex@example.com", description: "LTV_CENTS: 28800\nRISK_FLAG: none" });
+  const contact = await sfa.findContactByEmail("alex@example.com");
+  assert.equal(contact?.Id, id);
+  await sfa.updateContact(id, { Description: sfa.setDescriptionLine(contact!.Description, "RISK_FLAG", "friendly_fraud") });
+  const reread = await sfa.getContact(id);
+  assert.equal(sfa.descriptionLine(reread.Description, "RISK_FLAG"), "friendly_fraud");
+  assert.equal(sfa.descriptionLine(reread.Description, "LTV_CENTS"), "28800");
+  await sfa.createCase({ contactId: id, subject: "Evidence needed: du_x", description: "- no delivery record in Salesforce" });
+  assert.equal((await sfa.findCases(id, "Evidence needed: du_x")).length, 1);
+  assert.equal((await sfa.listCasesForContact(id)).length, 1);
+
+  const first = await gm.insertMessage({ from: "Alex <alex@example.com>", to: "support@juniperpine.example", subject: "Re: order", body: "Got it, thanks!", date: new Date("2026-09-08T12:00:00Z") });
+  await gm.insertMessage({ from: "support@juniperpine.example", to: "alex@example.com", subject: "Re: order", body: "Glad it arrived.", date: new Date("2026-09-08T13:00:00Z"), threadId: first.threadId });
+  const threads = await gm.searchThreads("alex@example.com", "2026/03/01");
+  assert.equal(threads.length, 1);
+  const thread = await gm.getThread(threads[0].id);
+  assert.equal(thread.length, 2);
+  assert.equal(thread[0].text, "Got it, thanks!");
+  assert.equal(thread[0].date, "2026-09-08T12:00:00.000Z");
+  assert.deepEqual(await gm.searchThreads("nobody@example.com"), []);
+
+  const posted = await sl.post("disputes", "Dispute du_x: fought and verified");
+  assert.equal((await sl.readback(posted.channel, posted.ts)).found, true);
+  assert.equal((await sl.findMessages("disputes", "du_x")).length, 1);
+  server.close();
+}
+
 console.log("selftest: all checks passed");

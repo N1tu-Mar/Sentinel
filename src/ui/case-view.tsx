@@ -101,6 +101,14 @@ export function CaseView({ id }: { id: string }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill status={c.status} />
+            {c.environment === "local-sandbox" && (
+              <span
+                className="rounded-full border border-rule px-2.5 py-0.5 text-xs text-muted"
+                title="Salesforce, Gmail and Slack ran against Sentinel's local sandbox; Stripe is real test mode"
+              >
+                Local sandbox
+              </span>
+            )}
             {c.chaosMode !== "none" && (
               <span className="rounded-full border border-red px-2.5 py-0.5 text-xs font-medium text-red">Test failure: {chaosLabel}</span>
             )}

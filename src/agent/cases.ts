@@ -1,8 +1,10 @@
 import type Stripe from "stripe";
 import * as stripeApi from "@/adapters/stripe";
-import type { DisputeCase } from "@/domain/types";
+import type { DisputeCase, ProviderEnvironment } from "@/domain/types";
 import { getStore } from "@/store";
 import { OPEN_STATUSES } from "./policy";
+
+export const providerEnvironment = (): ProviderEnvironment => (process.env.SANDBOX_URL ? "local-sandbox" : "arga-twins");
 
 export async function caseFromDispute(d: Stripe.Dispute, scenario?: string): Promise<DisputeCase> {
   const chargeId = stripeApi.idOf(d.charge);
@@ -12,6 +14,7 @@ export async function caseFromDispute(d: Stripe.Dispute, scenario?: string): Pro
     id: d.id,
     status: "new",
     scenario,
+    environment: providerEnvironment(),
     chaosMode: "none",
     dispute: {
       id: d.id,

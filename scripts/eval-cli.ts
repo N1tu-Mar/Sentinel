@@ -17,13 +17,16 @@ for (const key of keys) {
 }
 
 const metrics = computeMetrics(results);
+const environment = process.env.SANDBOX_URL
+  ? "Stripe test mode + local sandbox (Salesforce, Gmail, Slack)"
+  : "Stripe test mode + Arga twins (Salesforce, Gmail, Slack)";
 const at = new Date().toISOString();
-await writeFile("eval/results.json", JSON.stringify({ at, model: process.env.AGENT_MODEL ?? "claude-sonnet-5", metrics, results }, null, 2) + "\n");
+await writeFile("eval/results.json", JSON.stringify({ at, environment, model: process.env.AGENT_MODEL ?? "claude-sonnet-5", metrics, results }, null, 2) + "\n");
 
 const md = [
   `# Eval results`,
   ``,
-  `Run at ${at}. Each scenario: reset twins → seed → run agent → assert provider state.`,
+  `Run at ${at} against **${environment}**. Each scenario: reset → seed → run agent → assert provider state.`,
   ``,
   `| Metric | Value |`,
   `| --- | --- |`,

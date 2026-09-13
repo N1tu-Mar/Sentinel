@@ -1,4 +1,5 @@
-import { ingestDispute } from "@/agent/cases";
+import * as slack from "@/adapters/slack";
+import { ingestDispute, providerEnvironment } from "@/agent/cases";
 import { errMsg } from "@/agent/idempotency";
 import { decideApproval, runCase } from "@/agent/run";
 import { readExternalState } from "@/agent/verify";
@@ -28,13 +29,18 @@ export async function runScenario(key: string): Promise<EvalResult> {
     stripeWriteUnexpected: false,
     constraintViolation: false,
     chaos: s.chaos,
+    environment: providerEnvironment(),
     stateConsistent: false,
     wallMs: 0,
     at: start,
   };
   try {
     // Free plan: twins live 10 minutes, so ARGA_REPROVISION=1 provisions fresh twins per scenario instead of resetting.
-    if (process.env.ARGA_REPROVISION === "1") applyTwinEnv((await provisionTwins()).env);
+    if (process.env.SANDBOX_URL) {
+      const reset = await fetch(`${process.env.SANDBOX_URL}/_sandbox/reset`, { method: "POST" });
+      if (!reset.ok) throw new Error(`local sandbox reset failed: HTTP ${reset.status}`);
+      slack.clearChannelCache();
+    } else if (process.env.ARGA_REPROVISION === "1") applyTwinEnv((await provisionTwins()).env);
     else if (hasTwinRuns()) await resetTwins();
     const seeded = process.env.EVAL_SEED_MODE === "prompt" ? await locateScenario(s) : await seedScenario(s);
     const wantPastDue = s.fixture.seed.stripe.dispute.evidence_details.past_due;

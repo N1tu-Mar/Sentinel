@@ -44,6 +44,10 @@ export function EvalBoard() {
   const byKey = new Map(board.results.map((r) => [r.scenario, r]));
   const passed = board.results.filter((r) => r.passed).length;
   const lastRun = board.results.length ? new Date(Math.max(...board.results.map((r) => r.at))).toLocaleString() : null;
+  const environments = [...new Set(board.results.map((r) => r.environment).filter(Boolean))];
+  const envLabel = environments.length
+    ? ` against ${environments.map((e) => (e === "local-sandbox" ? "Stripe test mode + local sandbox" : "Stripe test mode + Arga twins")).join(" and ")}`
+    : "";
   const has = m.scenariosRun > 0;
   const figures: [string, string, string][] = [
     ["Task success", has ? `${passed}/${m.scenariosRun}` : "—", "All end-state assertions pass"],
@@ -60,8 +64,8 @@ export function EvalBoard() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Evaluation</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted">
-            Each scenario resets the Arga sandbox, seeds Stripe, Salesforce, Gmail and Slack, runs the agent, then reads every system
-            to check the end state. {lastRun ? `Last run ${lastRun}.` : "Not run yet."} Committed results live in{" "}
+            Each scenario resets the providers, seeds Stripe, Salesforce, Gmail and Slack, runs the agent, then reads every system to
+            check the end state. {lastRun ? `Last run ${lastRun}${envLabel}.` : "Not run yet."} Committed results live in{" "}
             <span className="font-mono text-xs">eval/results.json</span>.
           </p>
         </div>

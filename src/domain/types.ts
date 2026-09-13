@@ -13,6 +13,9 @@ export type CaseStatus =
   | "needs_attention"
   | "failed";
 
+/** Where Salesforce, Gmail and Slack calls went. Stripe is always real Stripe test mode. */
+export type ProviderEnvironment = "arga-twins" | "local-sandbox";
+
 export type ChaosMode =
   | "none"
   | "drop_submit_once"
@@ -23,6 +26,7 @@ export interface DisputeCase {
   id: string; // = Stripe dispute id (du_… current, dp_… older; never validate the prefix)
   status: CaseStatus;
   scenario?: string;
+  environment?: ProviderEnvironment;
   chaosMode: ChaosMode;
   dispute: {
     id: string;
@@ -159,6 +163,7 @@ export interface EvalResult {
   skipped?: string;
   failures: string[];
   forbiddenObserved?: string[];
+  environment?: ProviderEnvironment;
   expectedBranch: Branch;
   branch?: Branch;
   finalStatus?: CaseStatus;
