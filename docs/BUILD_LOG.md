@@ -18,3 +18,4 @@
 18:18 ET — docs: README updated with real setup and results
 18:18 ET — docs: reliability brief updated
 18:18 ET — docs: demo script updated; approval flow verified on live site
+18:20 ET — ui: overflow fixes from live screenshot review; chaos recovery verified on live site
