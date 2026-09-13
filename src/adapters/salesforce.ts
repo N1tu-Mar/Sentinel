@@ -18,7 +18,7 @@ export interface SfCase {
 }
 
 function base(): string {
-  const version = env("SALESFORCE_API_VERSION") ?? "v62.0";
+  const version = env("SALESFORCE_API_VERSION") ?? "v60.0"; // the twin lists v60.0+ at GET /services/data
   const b = requireEnv("SALESFORCE_API_BASE_URL", "SALESFORCE_INSTANCE_URL").replace(/\/$/, "");
   return b.includes("/services/data") ? b : `${b}/services/data/${version}`;
 }

@@ -1,39 +1,26 @@
 import "./_env";
 import { writeFile } from "node:fs/promises";
-import { sleep } from "@/adapters/logged-fetch";
 import { SCENARIOS } from "@/domain/scenarios";
-import { argaClient } from "@/eval/seed";
+import { DEFAULT_TWINS, provisionTwins } from "@/eval/arga";
 
-// npm run provision [-- --with-scenario-prompts]
-// Four twins in one run needs Arga's Team plan (Free = 1 twin, 10-minute TTL). Writes credentials to .env.twins (gitignored).
+// npm run provision [-- --twins=gmail,slack,salesforce] [--together] [--with-scenario-prompts]
+// Default: one run per twin (Arga Free plan: 1 twin per run, 10-minute TTL). --together needs the Team plan.
+// Stripe stays on real Stripe test mode (Kill Check #1). Writes credentials to .env.twins (gitignored).
+const arg = (name: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
 const withPrompts = process.argv.includes("--with-scenario-prompts");
-const twinsArg = process.argv.find((a) => a.startsWith("--twins="))?.slice("--twins=".length); // e.g. --twins=stripe (Free plan: 1 twin)
-const arga = argaClient();
-const { runId } = await arga.twins.provision({
-  twins: twinsArg ? twinsArg.split(",") : ["stripe", "gmail", "slack", "salesforce"],
-  ttlMinutes: Number(process.env.ARGA_TTL_MINUTES ?? 480),
-  ...(withPrompts
-    ? { scenarioPrompt: SCENARIOS.map((s) => `${s.key}: ${s.fixture.scenario_prompt}`).join("\n\n"), scenarioGenerationMode: "thorough" as const }
-    : {}),
+
+const { env, runIds, bases, expiresAt } = await provisionTwins({
+  twins: arg("twins")?.split(",") ?? DEFAULT_TWINS,
+  split: !process.argv.includes("--together"),
+  ttlMinutes: Number(process.env.ARGA_TTL_MINUTES ?? 10),
+  scenarioPrompt: withPrompts ? SCENARIOS.map((s) => `${s.key}: ${s.fixture.scenario_prompt}`).join("\n\n") : undefined,
 });
-console.log(`provisioning twin run ${runId}…`);
 
-let status = await arga.twins.getStatus(runId);
-while (status.status !== "ready") {
-  if (["failed", "expired", "cancelled"].includes(status.status)) throw new Error(`twin run ${status.status}: ${status.error ?? ""}`);
-  await sleep(5000);
-  status = await arga.twins.getStatus(runId);
-}
-
-const lines = [`ARGA_TWIN_RUN_ID=${runId}`];
-for (const [name, twin] of Object.entries(status.twins)) {
-  lines.push(`# ${name}: ${twin.baseUrl}`);
-  for (const [k, v] of Object.entries(twin.envVars)) lines.push(`${k}=${v}`);
-  if (name === "gmail" && !twin.envVars.GMAIL_API_BASE_URL) lines.push(`GMAIL_API_BASE_URL=${twin.baseUrl}`);
-  if (name === "stripe" && !twin.envVars.STRIPE_TWIN_BASE_URL && !twin.envVars.STRIPE_API_BASE_URL) lines.push(`STRIPE_API_BASE_URL=${twin.baseUrl}`);
-  if (name === "slack" && !twin.envVars.SLACK_TWIN_BASE_URL && !twin.envVars.SLACK_API_URL) lines.push(`SLACK_API_URL=${twin.baseUrl}`);
-}
-if (withPrompts) lines.push("EVAL_SEED_MODE=prompt");
+const lines = [
+  ...Object.entries(bases).map(([name, url]) => `# ${name}: ${url}`),
+  ...Object.entries(env).map(([k, v]) => `${k}=${v}`),
+  ...(withPrompts ? ["EVAL_SEED_MODE=prompt"] : []),
+];
 await writeFile(".env.twins", `${lines.join("\n")}\n`, { mode: 0o600 });
-console.log(`ready; expires ${status.expiresAt}. Wrote .env.twins — scripts load it automatically; for next dev, copy it into .env.local.`);
+console.log(`ready: ${runIds.length} run(s), first expiry ${expiresAt ?? "none reported"}. Wrote .env.twins (scripts load it; copy into .env.local for next dev).`);
 console.log("Next: npm run twins:check -- --capture");

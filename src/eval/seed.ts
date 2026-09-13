@@ -1,4 +1,3 @@
-import { Arga } from "arga-sdk";
 import type Stripe from "stripe";
 import * as gmail from "@/adapters/gmail";
 import { sleep } from "@/adapters/logged-fetch";
@@ -143,20 +142,5 @@ export async function locateScenario(s: Scenario): Promise<Seeded> {
   return { disputeId: dispute.id, customerId, email: s.email, dueBy: dispute.evidence_details?.due_by ? dispute.evidence_details.due_by * 1000 : null, notes };
 }
 
-export function argaClient() {
-  const apiKey = process.env.ARGA_API_KEY;
-  if (!apiKey) throw new Error("ARGA_API_KEY is required");
-  // arga-sdk defaults to app.argalabs.com, which serves the web app (HTML); the API lives on api.argalabs.com.
-  return new Arga({ apiKey, baseUrl: process.env.ARGA_API_URL || "https://api.argalabs.com" });
-}
-
-/** Restore every twin in the Arga run to its provisioned baseline. */
-export async function resetTwins() {
-  const runId = process.env.ARGA_TWIN_RUN_ID;
-  if (!runId) throw new Error("ARGA_TWIN_RUN_ID is required to reset twins");
-  const res = await argaClient().twins.reset(runId);
-  slack.clearChannelCache();
-  return res;
-}
-
+export { argaClient, resetTwins } from "./arga";
 export { MERCHANT };

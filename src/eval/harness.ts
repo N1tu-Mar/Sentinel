@@ -6,7 +6,8 @@ import { scenarioByKey } from "@/domain/scenarios";
 import type { EvalResult } from "@/domain/types";
 import { getStore } from "@/store";
 import { assertScenario } from "./assertions";
-import { locateScenario, resetTwins, seedScenario } from "./seed";
+import { applyTwinEnv, hasTwinRuns, provisionTwins, resetTwins } from "./arga";
+import { locateScenario, seedScenario } from "./seed";
 
 /**
  * reset → seed (or locate prompt-seeded data by email) → ingest → run (→ approve) → assert against provider state.
@@ -32,7 +33,9 @@ export async function runScenario(key: string): Promise<EvalResult> {
     at: start,
   };
   try {
-    if (process.env.ARGA_TWIN_RUN_ID) await resetTwins();
+    // Free plan: twins live 10 minutes, so ARGA_REPROVISION=1 provisions fresh twins per scenario instead of resetting.
+    if (process.env.ARGA_REPROVISION === "1") applyTwinEnv((await provisionTwins()).env);
+    else if (hasTwinRuns()) await resetTwins();
     const seeded = process.env.EVAL_SEED_MODE === "prompt" ? await locateScenario(s) : await seedScenario(s);
     const wantPastDue = s.fixture.seed.stripe.dispute.evidence_details.past_due;
     if (wantPastDue && seeded.dueBy !== null && seeded.dueBy > Date.now()) {

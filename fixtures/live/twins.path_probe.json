@@ -1,0 +1,42 @@
+{
+  "slack base/auth.test": {
+    "status": 404,
+    "body": "{\"detail\":\"Not Found\"}"
+  },
+  "slack base/api/auth.test": {
+    "status": 200,
+    "body": "{\"ok\":true,\"url\":\"https://pub-rc73b3ccea7a6489b81e86fe5b12655b1--slack.sandbox.argalabs.com\",\"team\":\"Default Workspace\",\"team_id\":\"TTWIN0001\",\"user\":\"slack-twin-bot\",\"user_id\":\"UTWINBOT\",\"bot_id\":\"BTWINBOT01\",\"is_enterprise_install\":false}"
+  },
+  "slack api/conversations.create": {
+    "status": 200,
+    "body": "{\"ok\":true,\"channel\":{\"id\":\"CC0EE26BDEF\",\"name\":\"disputes\",\"name_normalized\":\"disputes\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"is_archived\":false,\"is_general\":false,\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"is_pending_ext_shared\":false,\"is_member\":true,\"is_open\":true,\"is_read_only\":false,\"is_thread_only\":false,\"created\":1789323174,\"updated\":1789323174,\"last_read\":\"0000000000.000000\",\"creator\":\"UTWINBOT\",\"num_members\":1,\"context_team_id\":\"TTWIN0001\",\"conversation_host_id\":\"TTWIN0001\",\"connected_team_ids\":[\"TTWIN0001\"],\"connected_limited_team_ids\":[],\"internal_team_ids\":[\"TTWIN0001\"],\"shared_team_ids\":[\"TTWIN0001\"],\"pending_connected_team_ids\":[],\"pending_shared\":[],\"previous_names\":[\"disputes\"],\"parent_conversation\":null,\"unlinked\":0,\"properties\":{\"has_slack_connect_invite_created\":false,\"is_dormant\":false,\"use_case\":\"other\",\"tabs\":[{\"id\":\"files\",\"label\":\"Files\",\"type\":\"files\"}],\"tabz\":[{\"type\":\"files\"}]},\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":1789323174}}}"
+  },
+  "slack api/conversations.list": {
+    "status": 200,
+    "body": "{\"ok\":true,\"channels\":[{\"id\":\"CC0EE26BDEF\",\"name\":\"disputes\",\"name_normalized\":\"disputes\",\"is_channel\":true,\"is_group\":false,\"is_im\":false,\"is_mpim\":false,\"is_private\":false,\"is_archived\":false,\"is_general\":false,\"is_shared\":false,\"is_ext_shared\":false,\"is_org_shared\":false,\"is_pending_ext_shared\":false,\"is_member\":true,\"is_open\":true,\"is_read_only\":false,\"is_thread_only\":false,\"created\":1789323174,\"updated\":1789323174,\"last_read\":\"0000000000.000000\",\"creator\":\"UTWINBOT\",\"num_members\":1,\"context_team_id\":\"TTWIN0001\",\"conversation_host_id\":\"TTWIN0001\",\"connected_team_ids\":[\"TTWIN0001\"],\"connected_limited_team_ids\":[],\"internal_team_ids\":[\"TTWIN0001\"],\"shared_team_ids\":[\"TTWIN0001\"],\"pending_connected_team_ids\":[],\"pending_shared\":[],\"previous_names\":[\"disputes\"],\"parent_conversation\":null,\"unlinked\":0,\"properties\":{\"has_slack_connect_invite_created\":false,\"is_dormant\":false,\"use_case\":\"other\",\"tabs\":[{\"id\":\"files\",\"label\":\"Files\",\"type\":\"files\"}],\"tabz\":[{\"type\":\"files\"}]},\"topic\":{\"value\":\"\",\"creator\":\"\",\"last_set\":0},\"purpose\":{\"value\":\"\",\"creator\":\"\",\"last_set\":1789323174}}],\"response_metadata\":{\"next_cursor\":\"\"}}"
+  },
+  "gmail base/gmail/v1/users/me/profile": {
+    "status": 200,
+    "body": "{\"emailAddress\":\"owner@gmail-twin.local\",\"messagesTotal\":13,\"threadsTotal\":13,\"historyId\":\"1013\"}"
+  },
+  "gmail threads q empty": {
+    "status": 200,
+    "body": "{\"threads\":[],\"resultSizeEstimate\":0}"
+  },
+  "gmail messages.insert": {
+    "status": 200,
+    "body": "{\"id\":\"ee898684e07312d6\",\"threadId\":\"ee898684e07312d6\",\"labelIds\":[\"INBOX\"],\"snippet\":\"Got it, thanks!\",\"historyId\":\"1014\",\"internalDate\":\"1767225821000\",\"sizeEstimate\":195,\"payload\":{\"partId\":\"\",\"mimeType\":\"text/plain\",\"filename\":\"\",\"headers\":[{\"name\":\"From\",\"value\":\"Alex Rivera <alex.rivera@example.com>\"},{\"name\":\"To\",\"value\":\"support@juniperpine.example\"},{\"name\":\"Subject\",\"value\":\"Re: order\"},{\"name\":\"Date\",\"value\":\"Tue, 08 Sep 2026 12:00:00 +0000\"},{\"name\":\"Content-Type\",\"value\":\"text/plain; charset=\\\"utf-8\\\"\"},{\"name\":\"Message-ID\",\"value\":\"<ee898684e07312d6@gmail-twin.local>\"}],\"body\":{\"size\":15,\"data\":\"R290IGl0LCB0aGFua3Mh\"}}}"
+  },
+  "gmail threads q alex": {
+    "status": 200,
+    "body": "{\"threads\":[{\"id\":\"ee898684e07312d6\",\"snippet\":\"Got it, thanks!\",\"historyId\":\"1014\"}],\"resultSizeEstimate\":1}"
+  },
+  "salesforce GET /services/data": {
+    "status": 200,
+    "body": "[{\"label\":\"Spring '26\",\"url\":\"/services/data/v60.0\",\"version\":\"60.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v61.0\",\"version\":\"61.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v62.0\",\"version\":\"62.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v63.0\",\"version\":\"63.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v64.0\",\"version\":\"64.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v65.0\",\"version\":\"65.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v66.0\",\"version\":\"66.0\"},{\"label\":\"Spring '26\",\"url\":\"/services/data/v67.0\",\"version\":\"67.0\"}]"
+  },
+  "salesforce describe Case": {
+    "status": 404,
+    "body": "{\"detail\":\"Not Found\"}"
+  }
+}
