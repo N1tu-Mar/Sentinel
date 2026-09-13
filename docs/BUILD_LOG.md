@@ -17,3 +17,4 @@
 18:18 ET — ui: landing page, queue at /disputes
 18:18 ET — docs: README updated with real setup and results
 18:18 ET — docs: reliability brief updated
+18:18 ET — docs: demo script updated; approval flow verified on live site
