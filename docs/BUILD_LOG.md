@@ -14,3 +14,6 @@
 15:08 ET — eval: 7/7 pass (Stripe test mode + local sandbox), 08 skipped
 16:04 ET — feat: hosted sandbox + env:use sandbox|arga
 16:20 ET — feat: per-environment eval results, Sandbox page
+18:18 ET — ui: landing page, queue at /disputes
+18:18 ET — docs: README updated with real setup and results
+18:18 ET — docs: reliability brief updated
