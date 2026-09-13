@@ -26,6 +26,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Link href="/eval" className="text-sheet/75 hover:text-sheet">
               Evaluation
             </Link>
+            <Link href="/sandbox" className="text-sheet/75 hover:text-sheet">
+              Sandbox
+            </Link>
           </div>
         </nav>
         {children}

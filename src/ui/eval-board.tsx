@@ -1,24 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Branch, ChaosMode, EvalResult } from "@/domain/types";
+import type { Branch, ChaosMode, EvalResult, ProviderEnvironment } from "@/domain/types";
 import type { computeMetrics } from "@/eval/assertions";
-import { BRANCH_TEXT, CHAOS_OPTIONS } from "./format";
+import { BRANCH_TEXT, CHAOS_OPTIONS, ENVIRONMENT_TEXT } from "./format";
 
+type EnvBoard = { results: EvalResult[]; metrics: ReturnType<typeof computeMetrics> };
 type Board = {
   scenarios: { key: string; title: string; expected: Branch; chaos: ChaosMode }[];
-  results: EvalResult[];
-  metrics: ReturnType<typeof computeMetrics>;
+  current: ProviderEnvironment;
+  environments: Record<ProviderEnvironment, EnvBoard>;
 };
+const ENVIRONMENTS: ProviderEnvironment[] = ["arga-twins", "local-sandbox"];
 
 export function EvalBoard() {
   const [board, setBoard] = useState<Board | null>(null);
+  const [tab, setTab] = useState<ProviderEnvironment | null>(null);
   const [running, setRunning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/eval/results", { cache: "no-store" });
-    if (res.ok) setBoard(await res.json());
+    if (!res.ok) return;
+    const data: Board = await res.json();
+    setBoard(data);
+    setTab((t) => t ?? (data.environments["arga-twins"].results.length ? "arga-twins" : data.current));
   }, []);
   useEffect(() => {
     load();
@@ -39,15 +45,12 @@ export function EvalBoard() {
     setRunning(null);
   }
 
-  if (!board) return <main className="mx-auto max-w-6xl px-4 py-10 text-sm text-muted sm:px-6">Loading results…</main>;
-  const m = board.metrics;
-  const byKey = new Map(board.results.map((r) => [r.scenario, r]));
-  const passed = board.results.filter((r) => r.passed).length;
-  const lastRun = board.results.length ? new Date(Math.max(...board.results.map((r) => r.at))).toLocaleString() : null;
-  const environments = [...new Set(board.results.map((r) => r.environment).filter(Boolean))];
-  const envLabel = environments.length
-    ? ` against ${environments.map((e) => (e === "local-sandbox" ? "Stripe test mode + Sentinel sandbox" : "Stripe test mode + Arga twins")).join(" and ")}`
-    : "";
+  if (!board || !tab) return <main className="mx-auto max-w-6xl px-4 py-10 text-sm text-muted sm:px-6">Loading results…</main>;
+  const { results, metrics: m } = board.environments[tab];
+  const canRun = tab === board.current;
+  const byKey = new Map(results.map((r) => [r.scenario, r]));
+  const passed = results.filter((r) => r.passed).length;
+  const lastRun = results.length ? new Date(Math.max(...results.map((r) => r.at))).toLocaleString() : null;
   const has = m.scenariosRun > 0;
   const figures: [string, string, string][] = [
     ["Task success", has ? `${passed}/${m.scenariosRun}` : "—", "All end-state assertions pass"],
@@ -60,25 +63,44 @@ export function EvalBoard() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Evaluation</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted">
-            Each scenario resets the providers, seeds Stripe, Salesforce, Gmail and Slack, runs the agent, then reads every system to
-            check the end state. {lastRun ? `Last run ${lastRun}${envLabel}.` : "Not run yet."} Committed results live in{" "}
-            <span className="font-mono text-xs">eval/results.json</span>.
-          </p>
+      <header className="border-b border-rule pb-5">
+        <h1 className="text-2xl font-semibold tracking-tight">Evaluation</h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted">
+          Each scenario resets the providers, seeds Stripe, Salesforce, Gmail and Slack, runs the agent, then reads every system to check the
+          end state. Committed results live in <span className="font-mono text-xs">eval/results.json</span>.
+        </p>
+      </header>
+
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-3 border-b border-rule">
+        <div role="tablist" aria-label="Environment" className="flex gap-1">
+          {ENVIRONMENTS.map((env) => (
+            <button
+              key={env}
+              role="tab"
+              aria-selected={tab === env}
+              onClick={() => setTab(env)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === env ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"}`}
+            >
+              {ENVIRONMENT_TEXT[env]} <span className="num font-normal text-muted">{board.environments[env].results.length}</span>
+              {board.current === env && <span className="ml-2 rounded-full bg-ink px-1.5 py-0.5 text-[10px] font-medium text-sheet">active</span>}
+            </button>
+          ))}
         </div>
         <button
           onClick={() => run(board.scenarios.map((s) => s.key))}
-          disabled={!!running}
-          className="rounded-md bg-ink px-3.5 py-1.5 text-sm font-medium text-sheet hover:bg-ink/85 disabled:opacity-50"
+          disabled={!!running || !canRun}
+          className="mb-2 rounded-md bg-ink px-3.5 py-1.5 text-sm font-medium text-sheet hover:bg-ink/85 disabled:opacity-50"
         >
           {running ? "Running…" : "Run all scenarios"}
         </button>
-      </header>
+      </div>
+
+      <p className="mt-3 text-sm text-muted">
+        {lastRun ? `Last run ${lastRun} on ${ENVIRONMENT_TEXT[tab]} (Stripe in test mode).` : `No runs on ${ENVIRONMENT_TEXT[tab]} yet.`}
+        {!canRun && ` Runs from this page go to ${ENVIRONMENT_TEXT[board.current]}.`}
+      </p>
       {error && (
-        <p role="alert" className="mt-4 text-sm text-red">
+        <p role="alert" className="mt-2 text-sm text-red">
           {error}
         </p>
       )}
@@ -128,7 +150,7 @@ export function EvalBoard() {
                   <td className="num py-3 pr-4 text-right">{r ? r.submitAttempts : "—"}</td>
                   <td className="num py-3 pr-4 text-right">{r ? r.providerCalls : "—"}</td>
                   <td className="py-3 pr-4">
-                    {running === s.key ? (
+                    {running === s.key && canRun ? (
                       <span className="text-muted">Running…</span>
                     ) : !r ? (
                       <span className="text-muted">Not run</span>
@@ -155,7 +177,7 @@ export function EvalBoard() {
                   <td className="py-3 text-right">
                     <button
                       onClick={() => run([s.key])}
-                      disabled={!!running}
+                      disabled={!!running || !canRun}
                       className="rounded-md border border-rule px-2.5 py-1 text-xs font-medium hover:bg-sheet disabled:opacity-50"
                     >
                       Run

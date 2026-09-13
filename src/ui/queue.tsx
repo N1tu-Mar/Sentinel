@@ -71,13 +71,13 @@ export function Queue() {
           </button>
           <div className="flex items-center overflow-hidden rounded-md border border-rule bg-sheet">
             <label htmlFor="scenario" className="sr-only">
-              Scenario
+              Test dispute scenario
             </label>
             <select
               id="scenario"
               value={scenario}
               onChange={(e) => setScenario(e.target.value)}
-              className="max-w-48 bg-transparent px-2 py-1.5 text-sm"
+              className="max-w-72 bg-transparent px-2 py-1.5 text-sm"
             >
               {scenarios.map((s) => (
                 <option key={s.key} value={s.key}>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChaosMode, DisputeCase, EvidenceItem, TimelineEvent } from "@/domain/types";
-import { BRANCH_TEXT, CHAOS_OPTIONS, deadline, money, reasonText, StatusPill } from "./format";
+import { BRANCH_TEXT, CHAOS_OPTIONS, deadline, ENVIRONMENT_TEXT, money, reasonText, StatusPill } from "./format";
 
 type Data = { case: DisputeCase; events: TimelineEvent[] };
 type ProviderCallEvent = Extract<TimelineEvent, { type: "provider_call" }>;
@@ -101,14 +101,12 @@ export function CaseView({ id }: { id: string }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill status={c.status} />
-            {c.environment === "local-sandbox" && (
-              <span
-                className="rounded-full border border-rule px-2.5 py-0.5 text-xs text-muted"
-                title="Salesforce, Gmail and Slack ran against Sentinel's sandbox, not Arga twins; Stripe is real test mode"
-              >
-                Sandbox
-              </span>
-            )}
+            <span
+              className="rounded-full border border-rule px-2.5 py-0.5 text-xs text-muted"
+              title="Where the Salesforce, Gmail and Slack calls went; Stripe is real test mode"
+            >
+              {ENVIRONMENT_TEXT[c.environment ?? "arga-twins"]}
+            </span>
             {c.chaosMode !== "none" && (
               <span className="rounded-full border border-red px-2.5 py-0.5 text-xs font-medium text-red">Test failure: {chaosLabel}</span>
             )}

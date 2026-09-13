@@ -1,4 +1,6 @@
-import type { Branch, CaseStatus, ChaosMode } from "@/domain/types";
+import type { Branch, CaseStatus, ChaosMode, ProviderEnvironment } from "@/domain/types";
+
+export const ENVIRONMENT_TEXT: Record<ProviderEnvironment, string> = { "arga-twins": "Arga twins", "local-sandbox": "Sandbox" };
 
 export const money = (cents: number, currency = "usd") =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);

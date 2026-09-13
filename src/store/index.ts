@@ -34,7 +34,8 @@ function redisStore(redis: Redis): Store {
       await redis.del(`case:${id}:events`);
     },
     async putEvalResult(r) {
-      await redis.hset("eval:results", { [r.scenario]: r });
+      // Keyed per environment so sandbox runs never replace Arga twin results.
+      await redis.hset("eval:results", { [`${r.environment ?? "arga-twins"}:${r.scenario}`]: r });
     },
     async getEvalResults() {
       const all = await redis.hgetall<Record<string, EvalResult>>("eval:results");
@@ -58,7 +59,7 @@ function memoryStore(): Store {
     appendEvent: async (id, e) => void (m.events.get(id) ?? m.events.set(id, []).get(id)!).push(clone(e)),
     getEvents: async (id) => clone(m.events.get(id) ?? []),
     clearEvents: async (id) => void m.events.delete(id),
-    putEvalResult: async (r) => void m.evals.set(r.scenario, clone(r)),
+    putEvalResult: async (r) => void m.evals.set(`${r.environment ?? "arga-twins"}:${r.scenario}`, clone(r)),
     getEvalResults: async () => [...m.evals.values()].map(clone),
     markEvent: async (id) => !m.seen.has(id) && !!m.seen.add(id),
   };

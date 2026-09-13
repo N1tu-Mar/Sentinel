@@ -225,6 +225,16 @@ export async function handleSandbox(store: SandboxStore, req: SandboxRequest, re
   const authorized = requiredToken ? req.authorization === `Bearer ${requiredToken}` : !!req.authorization;
   if (path === "/_sandbox/state") {
     const [sf, gm, sl] = await Promise.all([store.load("salesforce"), store.load("gmail"), store.load("slack")]);
+    if (req.url.searchParams.get("full") === "1") {
+      const h = (m: Mail, name: string) => m.headers.find((x) => x.name.toLowerCase() === name)?.value ?? "";
+      return result(200, {
+        salesforce: { contacts: sf.contacts, cases: sf.cases },
+        gmail: {
+          messages: gm.mail.map((m) => ({ id: m.id, threadId: m.threadId, date: new Date(m.internalDate).toISOString(), from: h(m, "from"), to: h(m, "to"), subject: h(m, "subject"), body: m.body })),
+        },
+        slack: { channels: sl.channels },
+      });
+    }
     return result(200, {
       contacts: sf.contacts.length,
       cases: sf.cases.map((c) => c.Subject),

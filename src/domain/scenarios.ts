@@ -63,7 +63,19 @@ export const FIXTURE_CHANNELS: Record<string, "disputes" | "approvals" | "risk">
 
 const files = { "scenario-01": s01, "scenario-02": s02, "scenario-03": s03, "scenario-04": s04, "scenario-05": s05, "scenario-06": s06, "scenario-07": s07, "scenario-08": s08 } as unknown as Record<string, ScenarioFixture>;
 
-const title = (name: string) => name.replaceAll("_", " ").replace(/^\w/, (ch) => ch.toUpperCase());
+/** Operator-facing labels; fixture names remain stable machine identifiers. */
+const SCENARIO_TITLES: Record<string, string> = {
+  fight_receipt_confirmed: "Customer confirmed delivery — submit evidence",
+  fight_delivery_and_email: "Delivery record + customer email — submit evidence",
+  accept_under_threshold_auto: "Canceled before charge — accept automatically",
+  accept_over_threshold_needs_approval: "Canceled before charge — approval required",
+  friendly_fraud_repeat_disputer: "Repeat disputes — submit evidence and flag",
+  ask_human_missing_evidence: "Missing evidence — send for manual review",
+  injected_silent_submit_failure: "Evidence saved as draft — detect and retry",
+  past_due_must_not_submit: "Deadline passed — do not submit",
+};
+
+const title = (name: string) => SCENARIO_TITLES[name] ?? name.replaceAll("_", " ").replace(/^\w/, (ch) => ch.toUpperCase());
 
 export const SCENARIOS: Scenario[] = Object.entries(files).map(([key, f]) => ({
   key,

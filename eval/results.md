@@ -1,6 +1,14 @@
 # Eval results
 
-Run at 2026-09-13T19:08:44.314Z against **Stripe test mode + local sandbox (Salesforce, Gmail, Slack)**. Each scenario: reset → seed → run agent → assert provider state.
+Each scenario: reset → seed → run agent → assert provider state. Results are kept separately per environment.
+
+## Stripe test mode + Arga twins (Salesforce, Gmail, Slack)
+
+Not run yet.
+
+## Stripe test mode + Sentinel sandbox (Salesforce, Gmail, Slack)
+
+Last run 2026-09-13T19:08:44.314Z, model claude-sonnet-5.
 
 | Metric | Value |
 | --- | --- |
