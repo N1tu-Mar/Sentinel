@@ -7,9 +7,10 @@ import { argaClient } from "@/eval/seed";
 // npm run provision [-- --with-scenario-prompts]
 // Four twins in one run needs Arga's Team plan (Free = 1 twin, 10-minute TTL). Writes credentials to .env.twins (gitignored).
 const withPrompts = process.argv.includes("--with-scenario-prompts");
+const twinsArg = process.argv.find((a) => a.startsWith("--twins="))?.slice("--twins=".length); // e.g. --twins=stripe (Free plan: 1 twin)
 const arga = argaClient();
 const { runId } = await arga.twins.provision({
-  twins: ["stripe", "gmail", "slack", "salesforce"],
+  twins: twinsArg ? twinsArg.split(",") : ["stripe", "gmail", "slack", "salesforce"],
   ttlMinutes: Number(process.env.ARGA_TTL_MINUTES ?? 480),
   ...(withPrompts
     ? { scenarioPrompt: SCENARIOS.map((s) => `${s.key}: ${s.fixture.scenario_prompt}`).join("\n\n"), scenarioGenerationMode: "thorough" as const }
