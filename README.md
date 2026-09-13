@@ -4,6 +4,8 @@ When a customer tells their bank "I never got this", the bank pulls the money ba
 
 Live: https://sentinel-orpin-psi.vercel.app (queue at `/disputes`, evaluation at `/eval`, sandbox state at `/sandbox`).
 
+Demo video: https://drive.google.com/file/d/110fY93F8Uv2BTiRgcz8FQkKWG5Utj09n/view?usp=sharing
+
 ## Decisions
 
 | Branch | Evidence pattern | Action |
