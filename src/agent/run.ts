@@ -48,7 +48,8 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
 
   const lemmaOn = !!(process.env.LEMMA_API_KEY && process.env.LEMMA_PROJECT_ID);
   const trace = new TraceContext({ id: crypto.randomUUID(), name: "sentinel", input: `dispute ${c.id}` });
-  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel" }) : undefined;
+  const metadata = { caseId: c.id, disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 };
+  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel", metadata }) : undefined;
   if (lemma) c.lemmaTraceId = trace.id;
 
   const prompt = opts.resume
@@ -71,7 +72,6 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
         telemetry: {
           isEnabled: lemmaOn,
           functionId: "sentinel",
-          metadata: { caseId: c.id, disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 },
           // Lemma types the integration against both AI SDK v6 and v7 events; runtime supports v7 (per its README).
           integrations: lemma ? [lemma as unknown as Telemetry] : undefined,
         },
