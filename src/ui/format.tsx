@@ -52,7 +52,7 @@ const STATUS: Record<CaseStatus, { text: string; cls: string }> = {
 export function StatusPill({ status }: { status: CaseStatus }) {
   const s = STATUS[status];
   return (
-    <span className={`state-flip inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium ${s.cls}`}>
+    <span className={`state-flip field-label inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 py-1 ${s.cls}`}>
       {status === "running" && <span className="size-1.5 animate-pulse rounded-full bg-ink motion-reduce:animate-none" aria-hidden />}
       {s.text}
     </span>

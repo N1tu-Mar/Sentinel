@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { LandingPreview } from "@/ui/landing-preview";
+import { BrandMark } from "@/ui/site-header";
 import evalResults from "../../eval/results.json";
 
 export const metadata: Metadata = {
@@ -14,9 +15,9 @@ export const metadata: Metadata = {
 const sandboxRun = evalResults.environments["local-sandbox"].metrics;
 
 const STAKES = [
-  { figure: "About 1 week", text: "to assemble a response before a typical evidence deadline closes." },
-  { figure: "1 final submit", text: "because submitted dispute evidence cannot be casually edited and sent again." },
-  { figure: "4 systems", text: "where the claim, customer history, communication, and operational follow-up live." },
+  { label: "Time to respond", figure: "About 1 week", text: "to assemble a response before a typical evidence deadline closes." },
+  { label: "Submissions", figure: "1 final submit", text: "because submitted dispute evidence cannot be casually edited and sent again." },
+  { label: "Systems involved", figure: "4 systems", text: "where the claim, customer history, communication, and operational follow-up live." },
 ];
 
 const WITHOUT = [
@@ -35,43 +36,51 @@ const WITH = [
   "The case closes only after Stripe, Salesforce, and Slack agree with the recorded decision.",
 ];
 
-const AUDIENCES = [
+const ROUTING = [
   {
-    title: "E-commerce finance & operations",
-    body: "own the result — fewer scattered investigations, explicit decision policy, and one auditable case record.",
+    role: "E-commerce finance & operations",
+    duty: "Own the result",
+    body: "Fewer scattered investigations, explicit decision policy, and one auditable case record.",
   },
   {
-    title: "Chargeback specialists",
-    body: "run the queue — evidence arrives with its source, deadlines stay visible, and each action shows what was observed.",
+    role: "Chargeback specialists",
+    duty: "Run the queue",
+    body: "Evidence arrives with its source, deadlines stay visible, and each action shows what was observed.",
   },
   {
-    title: "Finance & risk leads",
-    body: "approve exceptions — high-value accepts wait for a named decision, while repeat-dispute handling remains traceable.",
+    role: "Finance & risk leads",
+    duty: "Approve exceptions",
+    body: "Accepts over $200 wait for a named decision, while repeat-dispute handling remains traceable.",
   },
 ];
 
 const STEPS = [
   {
+    verb: "Read",
     title: "A dispute arrives",
     systems: ["Stripe"],
     text: "Sentinel syncs an open dispute and records its amount, reason, charge, status, submission count, and evidence deadline. Closed or past-due cases are blocked before any Stripe write.",
   },
   {
+    verb: "Gather",
     title: "The evidence is assembled",
     systems: ["Stripe", "Salesforce", "Gmail"],
     text: "The agent reads the charge and customer, checks refunds, subscriptions, and other disputes, finds delivery records in Salesforce, and searches the merchant inbox for relevant customer messages. Evidence can only cite records returned during the run.",
   },
   {
+    verb: "Decide",
     title: "One branch is recorded",
     systems: ["Anthropic", "Vercel AI SDK", "Sentinel policy"],
     text: "The agent records FIGHT, FIGHT_AND_FLAG, ACCEPT, ASK_HUMAN, or EXPIRED_OR_BLOCKED with a rationale and evidence IDs. Deterministic code—not model confidence—decides whether each requested action is permitted.",
   },
   {
+    verb: "Act",
     title: "The right action runs",
     systems: ["Stripe", "Salesforce", "Slack"],
     text: "Sentinel submits evidence, accepts a valid claim, cancels an eligible subscription, creates follow-up work, or asks for missing evidence. Accepting more than $200 stops for a named human approval first.",
   },
   {
+    verb: "Read back",
     title: "Every system answers back",
     systems: ["Lemma", "Arga Labs"],
     text: "Each write is read back from the provider. A mismatch is retried once with safe deduplication and a new idempotency key. Independent final checks decide whether the case is resolved or needs attention.",
@@ -80,7 +89,7 @@ const STEPS = [
 
 const DOORS = [
   {
-    audience: "For dispute operations",
+    tab: "For dispute operations",
     title: "Work the queue. Open the evidence. See the result.",
     points: [
       "Sync open disputes or create a synthetic test case.",
@@ -90,11 +99,11 @@ const DOORS = [
     ],
     cta: "Open the dispute queue",
     href: "/disputes",
-    tone: "border-canary-ink/30 bg-canary-wash hover:border-canary-ink/60 focus-within:border-canary-ink",
-    ctaTone: "text-carbon",
+    card: "border-canary-ink/25 bg-canary-wash hover:border-canary-ink/60 focus-within:border-canary-ink",
+    tabTone: "bg-canary text-canary-ink",
   },
   {
-    audience: "For engineering & risk",
+    tab: "For engineering & risk",
     title: "A test suite that checks the providers, not the story.",
     points: [
       "Reset and replay deterministic dispute scenarios.",
@@ -104,16 +113,16 @@ const DOORS = [
     ],
     cta: "See the evaluation",
     href: "/eval",
-    tone: "border-slate-200 bg-slate-50/60 hover:border-slate-300 focus-within:border-slate-400",
-    ctaTone: "text-slate-800",
+    card: "border-ink/15 bg-sheet hover:border-ink/40 focus-within:border-ink",
+    tabTone: "bg-ink text-sheet",
   },
 ];
 
-const code = (text: string, tone: "red" | "green") => (
-  <code className={`rounded px-1 font-mono text-[0.9em] ${tone === "red" ? "bg-red-wash text-red" : "bg-green-wash text-green"}`}>{text}</code>
+const state = (text: string, tone: "red" | "green") => (
+  <code className={`rounded-sm px-1 font-mono text-[0.88em] ${tone === "red" ? "bg-red-wash text-red" : "bg-green-wash text-green"}`}>{text}</code>
 );
 
-const CASE_ROWS: { title: string; body: ReactNode }[] = [
+const CASE_ROWS: { title: string; body: ReactNode; stamp?: "match" | "mismatch" }[] = [
   { title: "Claim received", body: "A $96 product-not-received dispute arrives with an open evidence window." },
   {
     title: "Evidence found",
@@ -122,19 +131,21 @@ const CASE_ROWS: { title: string; body: ReactNode }[] = [
   { title: "Decision recorded", body: "The evidence contradicts the claim, so Sentinel records FIGHT and cites the source records." },
   {
     title: "Silent failure detected",
+    stamp: "mismatch",
     body: (
       <>
-        The first Stripe update returns successfully but saves the response as a draft. Readback still observes {code("needs_response", "red")} with{" "}
-        {code("submission_count = 0", "red")}.
+        The first Stripe update returns successfully but saves the response as a draft. Readback still observes {state("needs_response", "red")} with{" "}
+        {state("submission_count = 0", "red")}.
       </>
     ),
   },
   {
     title: "Recovery verified",
+    stamp: "match",
     body: (
       <>
-        Sentinel re-reads before retrying, uses a new idempotency key, submits once, and verifies {code("under_review", "green")} with{" "}
-        {code("submission_count = 1", "green")}. The Slack summary is also read back.
+        Sentinel re-reads before retrying, uses a new idempotency key, submits once, and verifies {state("under_review", "green")} with{" "}
+        {state("submission_count = 1", "green")}. The Slack summary is also read back.
       </>
     ),
   },
@@ -156,235 +167,308 @@ const METRICS = [
   },
 ];
 
-const eyebrow = "text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500";
-const h2 = "mt-5 max-w-3xl text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl";
 const primaryCta =
-  "inline-flex min-h-11 items-center rounded-full bg-slate-900 px-6 text-sm font-semibold text-white transition-colors hover:bg-slate-700";
+  "inline-flex min-h-11 items-center rounded-md bg-ink px-5 text-sm font-semibold text-sheet transition-colors hover:bg-carbon";
+const secondaryCta =
+  "inline-flex min-h-11 items-center rounded-md border border-ink/25 px-5 text-sm font-semibold text-ink transition-colors hover:border-ink hover:bg-sheet";
 
-function Section({ id, eyebrowText, heading, children }: { id: string; eyebrowText: string; heading?: string; children: ReactNode }) {
+function Stamp({ kind, className = "", style }: { kind: "match" | "mismatch"; className?: string; style?: CSSProperties }) {
   return (
-    <section aria-labelledby={id} className="border-t border-slate-100 py-20 sm:py-24">
-      {heading ? (
-        <>
-          <p className={eyebrow}>{eyebrowText}</p>
-          <h2 id={id} className={h2}>
-            {heading}
-          </h2>
-        </>
-      ) : (
-        <h2 id={id} className={eyebrow}>
-          {eyebrowText}
-        </h2>
-      )}
-      {children}
-    </section>
+    <span className={`stamp ${kind === "match" ? "text-green" : "text-red"} ${className}`} style={style}>
+      {kind === "match" ? "Matches" : "Does not match"}
+    </span>
   );
 }
 
-function Step({ n, title, systems, text }: (typeof STEPS)[number] & { n: number }) {
+function SlipField({ label, tone, children }: { label: string; tone?: "copy"; children: ReactNode }) {
   return (
-    <li className="grid gap-2 border-t border-slate-100 py-8 first:border-t-0 md:grid-cols-[3rem_14rem_1fr] md:gap-6">
-      <span className="num text-2xl font-bold text-carbon" aria-hidden="true">
-        {n}
-      </span>
-      <div>
-        <h3 className="font-semibold text-slate-900">{title}</h3>
-        <ul aria-label="Systems involved" className="mt-2 flex flex-wrap gap-1.5">
-          {systems.map((s) => (
-            <li key={s} className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-              {s}
-            </li>
-          ))}
-        </ul>
+    <div className="px-4 py-3">
+      <dt className={`field-label ${tone ? "text-canary-ink" : "text-muted"}`}>{label}</dt>
+      <dd className="mt-1 font-mono text-[0.95rem] [overflow-wrap:anywhere]">{children}</dd>
+    </div>
+  );
+}
+
+/** Scenario 07, attempt 1: the original Sentinel sent, and the copy Stripe read back. */
+function DuplicateSlip() {
+  return (
+    <figure className="w-full max-w-md justify-self-center lg:justify-self-end">
+      <div className="relative z-10 rounded-t-md border border-b-0 border-ink/20 bg-sheet shadow-[0_24px_48px_-32px_rgba(22,26,51,0.55)]">
+        <div className="flex items-baseline justify-between gap-3 border-b border-rule px-4 py-2.5">
+          <p className="field-label text-ink">Original · sent to Stripe</p>
+          <p className="font-mono text-xs text-muted">attempt 1</p>
+        </div>
+        <dl className="grid grid-cols-2 divide-x divide-rule border-b border-rule">
+          <SlipField label="Action">submit evidence</SlipField>
+          <SlipField label="Amount">$96.00</SlipField>
+        </dl>
+        <dl>
+          <SlipField label="Provider response">HTTP 200 OK</SlipField>
+        </dl>
+        <div className="perforation" aria-hidden="true" />
       </div>
-      <p className="text-sm leading-relaxed text-slate-600">{text}</p>
-    </li>
+      <div
+        className="anim-copy relative rounded-b-md border border-t-0 border-canary-ink/30 bg-canary text-carbon"
+        style={{ "--stamp-ground": "var(--color-canary)" } as CSSProperties}
+      >
+        <p className="field-label border-b border-canary-ink/20 px-4 py-2.5 text-canary-ink">Copy · read back from Stripe</p>
+        <dl className="grid grid-cols-2 divide-x divide-canary-ink/20">
+          <SlipField label="status" tone="copy">
+            needs_response
+          </SlipField>
+          <SlipField label="submission_count" tone="copy">
+            0
+          </SlipField>
+        </dl>
+        <Stamp kind="mismatch" className="anim-stamp absolute -top-4 right-3 bg-canary" style={{ animationDelay: "1s" }} />
+      </div>
+      <figcaption className="mt-5 text-sm leading-relaxed text-muted">
+        Synthetic scenario 07. Stripe answered 200 but kept the evidence as a draft. Sentinel read the dispute back, caught the difference, and retried
+        with a new idempotency key. The second copy matched.
+      </figcaption>
+    </figure>
   );
 }
 
-function Door({ audience, title, points, cta, href, tone, ctaTone }: (typeof DOORS)[number]) {
+function Section({
+  id,
+  label,
+  heading,
+  children,
+  wide,
+  dark,
+}: {
+  id: string;
+  label: string;
+  heading: ReactNode;
+  children?: ReactNode;
+  wide?: ReactNode;
+  dark?: boolean;
+}) {
   return (
-    <article className={`group relative rounded-2xl border p-7 transition-colors sm:p-8 ${tone}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">{audience}</p>
-      <h3 className="mt-3 text-2xl font-bold leading-snug tracking-tight text-slate-900">{title}</h3>
-      <ul className="mt-5 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600 marker:text-slate-300">
-        {points.map((p) => (
-          <li key={p}>{p}</li>
-        ))}
-      </ul>
-      {/* The pseudo-element stretches this link over the whole card. */}
-      <Link
-        href={href}
-        className={`mt-6 inline-flex min-h-11 items-center text-sm font-semibold after:absolute after:inset-0 after:rounded-2xl group-hover:underline ${ctaTone}`}
-      >
-        {cta}&nbsp;<span aria-hidden="true">→</span>
-      </Link>
-    </article>
+    <section aria-labelledby={id} className={`py-20 sm:py-28 ${dark ? "bg-ink text-sheet" : "border-t border-ink/10"}`}>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
+          <p className={`field-label lg:pt-3 ${dark ? "text-sheet/60" : "text-muted"}`}>{label}</p>
+          <div>
+            <h2 id={id} className="display max-w-3xl text-[2rem] leading-[1.06] sm:text-[2.6rem]">
+              {heading}
+            </h2>
+            {children}
+          </div>
+        </div>
+        {wide}
+      </div>
+    </section>
   );
 }
 
 export default function Page() {
   return (
-    <div className="bg-white text-slate-900 ">
-      <main className="mx-auto max-w-4xl px-6">
-        <section aria-labelledby="hero-h" className="flex flex-col justify-center py-16 sm:min-h-[78vh]">
-          <h1 id="hero-h" className="max-w-3xl text-[2.6rem] font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            <span className="block">The bank pulled the money back.</span>
-            <span className="block">Now prove what happened.</span>
-            <span className="mt-4 block text-slate-500">
-              <span className="sr-only">Crossed out: </span>
-              <s className="decoration-carbon decoration-[0.09em]">HTTP 200 means done.</s>
-            </span>
-          </h1>
-          <p className="mt-8 max-w-xl text-lg leading-relaxed text-slate-600">
-            A customer says the order never arrived. The evidence is split across Stripe, Salesforce, and Gmail, the deadline is closing, and the final
-            response cannot be taken back. Sentinel investigates the claim, applies policy before acting, and reads every system back to prove the work
-            actually landed.
-          </p>
-          <p className="mt-4 max-w-xl text-lg font-medium leading-relaxed text-slate-900">
-            High-value accepts wait for a named human. Missing evidence never becomes a guess.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Link href="/disputes" className={primaryCta}>
-              Open the dispute queue
-            </Link>
-            <span className="text-sm text-slate-500">synthetic demo · about 45 seconds</span>
-            <Link href="/eval" className="inline-flex min-h-11 items-center text-sm text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline">
-              See the evaluation
-            </Link>
+    <main id="main" className="text-ink">
+      <section aria-labelledby="hero-h" className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid items-center gap-14 py-14 sm:py-20 lg:min-h-[80vh] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div>
+            <p className="field-label text-muted">Chargeback operations for e-commerce</p>
+            <h1 id="hero-h" className="display mt-5 text-[2.35rem] leading-[1.02] sm:text-[3.4rem] xl:text-[4rem]">
+              The bank pulled the money back. Now prove what happened.
+            </h1>
+            <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
+              A customer says the order never arrived. The evidence is split across Stripe, Salesforce, and Gmail, the deadline is closing, and the final
+              response cannot be taken back. Sentinel investigates the claim, applies policy before acting, and reads every system back to prove the work
+              actually landed.
+            </p>
+            <p className="mt-4 max-w-xl text-lg font-medium leading-relaxed">High-value accepts wait for a named human. Missing evidence never becomes a guess.</p>
+            <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <Link href="/disputes" className={primaryCta}>
+                Open the dispute queue
+              </Link>
+              <Link href="/eval" className="inline-flex min-h-11 items-center text-sm font-medium text-carbon underline-offset-4 hover:underline">
+                See the evaluation
+              </Link>
+              <span className="w-full text-sm text-muted">Synthetic demo · about 45 seconds</span>
+            </div>
           </div>
-        </section>
+          <DuplicateSlip />
+        </div>
+      </section>
 
-        <Section id="stakes-h" eyebrowText="The stakes">
-          <dl className="mt-12 space-y-10">
-            {STAKES.map((s) => (
-              <div key={s.figure} className="flex flex-col gap-2 md:flex-row md:items-baseline md:gap-10">
-                <dt className="text-5xl font-bold tracking-tight md:w-[22rem] md:shrink-0 md:text-6xl">{s.figure}</dt>
-                <dd className="max-w-md text-slate-600">{s.text}</dd>
-              </div>
-            ))}
-          </dl>
-        </Section>
+      <Section id="stakes-h" label="The stakes" heading="A chargeback is a deadline with one shot at the answer.">
+        <dl className="mt-10 grid divide-y divide-rule rounded-md border border-ink/15 bg-sheet sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {STAKES.map((s) => (
+            <div key={s.label} className="p-5 sm:p-6">
+              <dt className="field-label text-muted">{s.label}</dt>
+              <dd className="display mt-3 text-[1.9rem] leading-none">{s.figure}</dd>
+              <dd className="mt-3 text-sm leading-relaxed text-muted">{s.text}</dd>
+            </div>
+          ))}
+        </dl>
+      </Section>
 
-        <Section id="today-h" eyebrowText="Today" heading="Chargeback work fails in the gaps between systems.">
-          <div className="mt-12 grid gap-12 md:grid-cols-2">
-            {[
-              { label: "Without Sentinel", labelTone: "text-slate-500", items: WITHOUT, text: "text-slate-500" },
-              { label: "With Sentinel", labelTone: "text-green", items: WITH, text: "text-slate-700" },
-            ].map((col) => (
-              <div key={col.label}>
-                <h3 className={`text-sm font-semibold uppercase tracking-widest ${col.labelTone}`}>{col.label}</h3>
-                <ul className={`mt-5 list-disc space-y-3 pl-5 text-sm leading-relaxed marker:text-slate-300 ${col.text}`}>
-                  {col.items.map((item) => (
-                    <li key={item}>{item}</li>
+      <Section id="today-h" label="Today" heading="Chargeback work fails in the gaps between systems.">
+        <div className="mt-10 grid overflow-hidden rounded-md border border-ink/15 md:grid-cols-2">
+          <div className="bg-paper p-6 sm:p-7">
+            <h3 className="field-label text-muted">Without Sentinel</h3>
+            <ul className="mt-5 list-disc space-y-3 pl-5 text-[0.95rem] leading-relaxed text-muted marker:text-rule">
+              {WITHOUT.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="border-t border-ink/15 bg-sheet p-6 sm:p-7 md:border-l md:border-t-0">
+            <h3 className="field-label text-green">With Sentinel</h3>
+            <ul className="mt-5 list-disc space-y-3 pl-5 text-[0.95rem] leading-relaxed marker:text-carbon">
+              {WITH.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Section>
+
+      <Section id="routing-h" label="Who it’s for" heading="Verified chargeback operations for the teams responsible for the outcome.">
+        <ul className="mt-10 border-t border-ink/15">
+          {ROUTING.map((r) => (
+            <li key={r.role} className="grid gap-1 border-b border-rule py-5 sm:grid-cols-[15rem_11rem_minmax(0,1fr)] sm:gap-6">
+              <h3 className="font-semibold">{r.role}</h3>
+              <p className="field-label pt-0.5 text-carbon">{r.duty}</p>
+              <p className="text-[0.95rem] leading-relaxed text-muted">{r.body}</p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section
+        id="how-h"
+        label="How it works"
+        heading={
+          <>
+            AI investigates. Policy gates. <span className="text-carbon">Readback proves.</span>
+          </>
+        }
+      >
+        <p className="mt-4 max-w-xl text-muted">Five stages, with a recorded trail from the first Stripe read to the final cross-system check.</p>
+        <ol className="mt-10">
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="relative grid grid-cols-[2.75rem_minmax(0,1fr)] gap-4 pb-10 last:pb-0 sm:gap-6">
+              {i < STEPS.length - 1 && <span aria-hidden="true" className="absolute bottom-0 left-[1.375rem] top-12 w-px bg-rule" />}
+              <span aria-hidden="true" className="num grid size-11 place-items-center rounded-md border border-ink/20 bg-sheet font-mono text-sm">
+                {i + 1}
+              </span>
+              <div className="pt-0.5">
+                <p className="field-label text-carbon">{s.verb}</p>
+                <h3 className="mt-1 text-lg font-semibold">{s.title}</h3>
+                <p className="mt-2 max-w-2xl text-[0.95rem] leading-relaxed text-muted">{s.text}</p>
+                <ul aria-label="Systems involved" className="mt-3 flex flex-wrap gap-1.5">
+                  {s.systems.map((sys) => (
+                    <li key={sys} className="rounded-sm border border-rule bg-sheet px-1.5 py-0.5 font-mono text-[11px] text-muted">
+                      {sys}
+                    </li>
                   ))}
                 </ul>
               </div>
-            ))}
-          </div>
-        </Section>
+            </li>
+          ))}
+        </ol>
+      </Section>
 
-        <Section id="audience-h" eyebrowText="Sentinel" heading="Verified chargeback operations for the teams responsible for the outcome.">
-          <div className="mt-12 grid gap-10 md:grid-cols-3">
-            {AUDIENCES.map((a) => (
-              <div key={a.title}>
-                <h3 className="font-semibold text-slate-900">{a.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{a.body}</p>
+      <Section id="doors-h" label="One system, two doors" heading="Two ways in, one case record underneath.">
+        <div className="mt-12 grid gap-8 md:grid-cols-2">
+          {DOORS.map((d) => (
+            <article key={d.href} className={`group relative rounded-md border p-7 pt-9 transition-colors ${d.card}`}>
+              <p className={`field-label absolute -top-3 left-6 rounded-sm px-2 py-1 ${d.tabTone}`}>{d.tab}</p>
+              <h3 className="display text-[1.45rem] leading-tight">{d.title}</h3>
+              <ul className="mt-5 list-disc space-y-2 pl-5 text-[0.95rem] leading-relaxed text-muted marker:text-ink/30">
+                {d.points.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+              {/* The pseudo-element stretches this link over the whole card. */}
+              <Link
+                href={d.href}
+                className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-ink underline-offset-4 after:absolute after:inset-0 after:rounded-md group-hover:underline"
+              >
+                {d.cta}&nbsp;<span aria-hidden="true">→</span>
+              </Link>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      <Section id="case-h" label="One synthetic case" heading="A 200 response that did nothing—and the readback that caught it.">
+        <ol className="mt-10 border-t border-ink/15">
+          {CASE_ROWS.map((r) => (
+            <li key={r.title} className="grid gap-2 border-b border-rule py-5 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-6">
+              <div className="flex items-start justify-between gap-3 sm:block">
+                <h3 className="field-label pt-0.5 text-ink">{r.title}</h3>
+                {r.stamp && <Stamp kind={r.stamp} className="sm:mt-3" style={{ "--stamp-ground": "var(--color-paper)" } as CSSProperties} />}
               </div>
-            ))}
-          </div>
-        </Section>
+              <p className="text-[0.95rem] leading-relaxed text-muted">{r.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
 
-        <Section id="how-h" eyebrowText="How it works" heading="AI investigates. Policy gates. Readback proves.">
-          <p className="mt-4 max-w-xl text-slate-600">Five stages, with a recorded trail from the first Stripe read to the final cross-system check.</p>
-          <ol className="mt-10">
-            {STEPS.map((s, i) => (
-              <Step key={s.title} n={i + 1} {...s} />
-            ))}
-          </ol>
-        </Section>
-
-        <Section id="doors-h" eyebrowText="One system, two doors">
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {DOORS.map((d) => (
-              <Door key={d.href} {...d} />
-            ))}
-          </div>
-        </Section>
-
-        <Section id="case-h" eyebrowText="One synthetic case" heading="A 200 response that did nothing—and the readback that caught it.">
-          <ol className="mt-10 border-y border-slate-100">
-            {CASE_ROWS.map((r, i) => (
-              <li key={r.title} className="grid gap-1 border-t border-slate-100 py-5 first:border-t-0 sm:grid-cols-[13rem_1fr] sm:gap-6">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  <span className="num mr-2 text-carbon" aria-hidden="true">
-                    {i + 1}
-                  </span>
-                  {r.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-slate-600">{r.body}</p>
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        <Section id="preview-h" eyebrowText="See it" heading="Every source, decision, action, and check in one timeline.">
-          <figure className="mt-10 xl:-mx-24">
+      <Section
+        id="preview-h"
+        label="See it"
+        heading="Every source, decision, action, and check in one timeline."
+        wide={
+          <figure className="mt-12">
             <LandingPreview />
-            <figcaption className="mt-4 text-center text-sm text-slate-500">
+            <figcaption className="mt-4 text-sm text-muted">
               Synthetic scenario 07: the first write saved a draft; Sentinel detected the mismatch, retried safely, and verified the provider state.
             </figcaption>
           </figure>
-        </Section>
+        }
+      />
 
-        <Section id="trust-h" eyebrowText="Why trust it">
-          <ul className="mt-12 grid gap-10 md:grid-cols-3">
-            {METRICS.map((m) => (
-              <li key={m.text}>
-                <p className="num text-6xl font-bold tracking-tight">{m.figure}</p>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">{m.text}</p>
-              </li>
-            ))}
-          </ul>
-          {sandboxRun.scenariosSkipped > 0 && (
-            <p className="mt-10 max-w-2xl border-l-2 border-slate-200 pl-4 text-sm leading-relaxed text-slate-500">
-              One past-due provider scenario was skipped because the backend could not seed its historical deadline; the no-submit deadline gate remains
-              covered by the offline policy suite.
-            </p>
-          )}
-          <Link href="/eval" className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-slate-800 hover:underline">
-            Inspect the full evaluation&nbsp;<span aria-hidden="true">→</span>
-          </Link>
-        </Section>
-
-        <section aria-labelledby="closing-h" className="flex min-h-[50vh] flex-col items-center justify-center border-t border-slate-100 py-20 text-center">
-          <h2 id="closing-h" className="max-w-4xl text-3xl font-bold leading-snug tracking-tight sm:text-4xl lg:text-5xl">
-            <span className="block">We do not trust a successful response.</span>
-            <span className="block">We verify the result.</span>
-          </h2>
-          <p className="mt-6 max-w-xl text-slate-600">
-            From the first evidence read to the final provider check, Sentinel leaves a case an operator can explain.
+      <Section id="trust-h" label="Why trust it" heading="What the last committed evaluation run showed." dark>
+        <ul className="mt-12 grid gap-10 md:grid-cols-3">
+          {METRICS.map((m) => (
+            <li key={m.text} className="border-t border-sheet/20 pt-5">
+              <p className="display num text-[3.6rem] leading-none">{m.figure}</p>
+              <p className="mt-4 text-sm leading-relaxed text-sheet/75">{m.text}</p>
+            </li>
+          ))}
+        </ul>
+        {sandboxRun.scenariosSkipped > 0 && (
+          <p className="mt-10 max-w-2xl border-l-2 border-canary/60 pl-4 text-sm leading-relaxed text-sheet/75">
+            One past-due provider scenario was skipped because the backend could not seed its historical deadline; the no-submit deadline gate remains
+            covered by the offline policy suite.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/disputes" className={primaryCta}>
-              Open the dispute queue
-            </Link>
-            <Link
-              href="/eval"
-              className="inline-flex min-h-11 items-center rounded-full border border-slate-300 px-6 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-500"
-            >
-              See the evaluation
-            </Link>
-          </div>
-        </section>
-      </main>
+        )}
+        <Link href="/eval" className="mt-8 inline-flex min-h-11 items-center text-sm font-semibold text-canary underline-offset-4 hover:underline">
+          Inspect the full evaluation&nbsp;<span aria-hidden="true">→</span>
+        </Link>
+      </Section>
 
-      <footer className="border-t border-slate-100">
-        <div className="mx-auto flex max-w-4xl flex-col items-center justify-between gap-2 px-6 py-8 text-center text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 md:flex-row md:text-left">
-          <p>Sentinel — verified chargeback operations · demo · synthetic data</p>
-          <p>AI investigates · policy gates · systems confirm</p>
+      <section aria-labelledby="closing-h" className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+        <h2 id="closing-h" className="display max-w-4xl text-[2.2rem] leading-[1.04] sm:text-[3.4rem]">
+          We don’t trust a successful response. <span className="text-carbon">We verify the result.</span>
+        </h2>
+        <p className="mt-6 max-w-xl text-lg text-muted">From the first evidence read to the final provider check, Sentinel leaves a case an operator can explain.</p>
+        <div className="mt-10 flex flex-wrap gap-3">
+          <Link href="/disputes" className={primaryCta}>
+            Open the dispute queue
+          </Link>
+          <Link href="/eval" className={secondaryCta}>
+            See the evaluation
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t border-ink/15">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted sm:px-6 md:flex-row md:items-center md:justify-between">
+          <p className="flex items-center gap-2">
+            <BrandMark className="shrink-0 text-ink" />
+            <span>
+              <span className="display text-ink">Sentinel</span> — verified chargeback operations · demo · synthetic data
+            </span>
+          </p>
+          <p className="field-label">AI investigates · policy gates · systems confirm</p>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }
