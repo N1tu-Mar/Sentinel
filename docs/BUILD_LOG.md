@@ -8,3 +8,4 @@
 13:39 ET — feat: align with research data contract and fixtures
 13:53 ET — feat: Lemma tracing verified with smoke trace; Vercel project linked and deployed
 14:08 ET — eval: Kill Check #1 failed on Stripe twin; Stripe falls back to test mode
+14:14 ET — feat: free-plan split twin provisioning; live path probe
