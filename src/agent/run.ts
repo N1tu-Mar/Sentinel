@@ -47,14 +47,6 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
   await ctx.save();
 
   const lemmaOn = !!(process.env.LEMMA_API_KEY && process.env.LEMMA_PROJECT_ID);
-  const metadata = { disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 };
-  const trace = new TraceContext({ id: crypto.randomUUID(), name: "sentinel.dispute_run", input: `dispute ${c.id}`, threadId: c.id, metadata });
-  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel.dispute_run", metadata: { ...metadata, threadId: c.id } }) : undefined;
-  if (lemma) {
-    c.lemmaTraceId = trace.id;
-    ctx.trace = trace;
-  }
-
   const prompt = opts.resume
     ? [
         initialUserMessage(c),
@@ -63,6 +55,17 @@ export async function runCase(caseId: string, opts: RunOptions = {}): Promise<Di
         approvalMessage(c.approval?.by ?? "a human", c.approval?.decidedAt ?? Date.now()),
       ].join("\n\n")
     : initialUserMessage(c);
+
+  // Lemma (lemma-tracing skill, Vercel AI SDK path): a fresh vercelAI() per run; it closes the root trace from onEnd.
+  // An explicit trace handle is passed so the trace id can be shown on the case and readback/recovery spans
+  // recorded under the same root. threadId = dispute id groups the approval resume with the first run.
+  const metadata = { threadId: c.id, disputeId: c.id, scenario: c.scenario ?? "", chaosMode: c.chaosMode, attempt: opts.resume ? 2 : 1 };
+  const trace = new TraceContext({ id: crypto.randomUUID(), name: "sentinel.dispute_run", input: prompt, threadId: c.id, metadata });
+  const lemma = lemmaOn ? vercelAI({ trace, agentName: "sentinel.dispute_run", metadata }) : undefined;
+  if (lemma) {
+    c.lemmaTraceId = trace.id;
+    ctx.trace = trace;
+  }
 
   try {
     await callSink.run(sinkFor(ctx), async () => {
