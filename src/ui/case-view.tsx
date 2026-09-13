@@ -74,7 +74,7 @@ export function CaseView({ id }: { id: string }) {
   const seenEvidence = useRef<Set<string> | null>(null);
 
   if (!data)
-    return <main className="mx-auto max-w-[1400px] px-4 py-10 text-sm text-muted sm:px-6">{error ?? "Loading dispute…"}</main>;
+    return <main id="main" className="mx-auto max-w-[1400px] px-4 py-10 text-sm text-muted sm:px-6">{error ?? "Loading dispute…"}</main>;
 
   const c = data.case;
   seenEvents.current ??= data.events.length;
@@ -91,7 +91,7 @@ export function CaseView({ id }: { id: string }) {
             <Link href="/disputes" className="text-sm text-carbon hover:underline">
               All disputes
             </Link>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+            <h1 className="display mt-1 text-[1.9rem] leading-tight">
               {c.customer?.name || c.dispute.customerId} <span className="num text-muted">{money(c.dispute.amount, c.dispute.currency)}</span>
             </h1>
             <p className="mt-0.5 text-sm text-muted">
@@ -102,13 +102,13 @@ export function CaseView({ id }: { id: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill status={c.status} />
             <span
-              className="rounded-full border border-rule px-2.5 py-0.5 text-xs text-muted"
+              className="rounded-sm border border-rule px-2.5 py-0.5 text-xs text-muted"
               title="Where the Salesforce, Gmail and Slack calls went; Stripe is real test mode"
             >
               {ENVIRONMENT_TEXT[c.environment ?? "arga-twins"]}
             </span>
             {c.chaosMode !== "none" && (
-              <span className="rounded-full border border-red px-2.5 py-0.5 text-xs font-medium text-red">Test failure: {chaosLabel}</span>
+              <span className="rounded-sm border border-red px-2.5 py-0.5 text-xs font-medium text-red">Test failure: {chaosLabel}</span>
             )}
             <label className="flex items-center gap-2 text-sm text-muted">
               Inject failure
@@ -128,7 +128,7 @@ export function CaseView({ id }: { id: string }) {
             <button
               onClick={() => post(`/api/cases/${id}/run`, { chaosMode: chaos })}
               disabled={running}
-              className="rounded-md bg-ink px-3.5 py-1.5 text-sm font-medium text-sheet hover:bg-ink/85 disabled:opacity-50"
+              className="rounded-md bg-ink px-3.5 py-2 text-sm font-semibold text-sheet transition-colors hover:bg-carbon disabled:opacity-50"
             >
               {running ? "Agent running…" : c.status === "new" ? "Run agent" : "Run agent again"}
             </button>
@@ -141,9 +141,9 @@ export function CaseView({ id }: { id: string }) {
         )}
       </header>
 
-      <main className="mx-auto grid max-w-[1400px] grid-cols-[minmax(0,1fr)] gap-8 px-4 py-6 [overflow-wrap:anywhere] sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
+      <main id="main" className="mx-auto grid max-w-[1400px] grid-cols-[minmax(0,1fr)] gap-8 px-4 py-6 [overflow-wrap:anywhere] sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
         <section aria-labelledby="evidence-h">
-          <h2 id="evidence-h" className="text-sm font-semibold">
+          <h2 id="evidence-h" className="field-label text-ink">
             Evidence <span className="num font-normal text-muted">{c.evidence.length}</span>
           </h2>
           {c.evidence.length === 0 && (
@@ -157,7 +157,7 @@ export function CaseView({ id }: { id: string }) {
         </section>
 
         <section aria-labelledby="timeline-h">
-          <h2 id="timeline-h" className="text-sm font-semibold">
+          <h2 id="timeline-h" className="field-label text-ink">
             What the agent did
           </h2>
           {data.events.length === 0 && <p className="mt-3 text-sm text-muted">The agent hasn&apos;t run on this dispute yet.</p>}
@@ -169,29 +169,31 @@ export function CaseView({ id }: { id: string }) {
 
         <aside aria-labelledby="state-h" className="space-y-6">
           {c.status === "awaiting_approval" && (
-            <div className="rounded-md border-2 border-ink bg-sheet p-4">
-              <h2 className="font-semibold">Needs your approval — {money(c.dispute.amount, c.dispute.currency)} accept</h2>
+            <div className="rounded-md border border-canary-ink/40 bg-canary-wash p-4">
+              <h2 className="display text-lg leading-snug">Needs your approval — {money(c.dispute.amount, c.dispute.currency)} accept</h2>
               <p className="mt-1 text-sm text-muted">{c.decision?.rationale}</p>
-              <label className="mt-3 block text-sm">
-                Your name
+              <label className="mt-4 block">
+                <span className="field-label text-canary-ink">Sign with your name</span>
                 <input
+                  name="approver"
+                  autoComplete="name"
                   value={approver}
                   onChange={(e) => setApprover(e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-rule bg-paper px-2 py-1.5"
+                  className="mt-1 block w-full border-0 border-b-2 border-ink bg-transparent px-0 py-1.5 font-mono text-base"
                 />
               </label>
               <div className="mt-3 flex gap-2">
                 <button
                   disabled={pending || !approver.trim()}
                   onClick={() => post(`/api/cases/${id}/approve`, { outcome: "approved", by: approver.trim() })}
-                  className="rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-sheet disabled:opacity-50"
+                  className="rounded-md bg-ink px-3 py-2 text-sm font-semibold text-sheet transition-colors hover:bg-carbon disabled:opacity-50"
                 >
                   Approve and accept
                 </button>
                 <button
                   disabled={pending || !approver.trim()}
                   onClick={() => post(`/api/cases/${id}/approve`, { outcome: "rejected", by: approver.trim() })}
-                  className="rounded-md border border-rule px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+                  className="rounded-md border border-ink/25 px-3 py-2 text-sm font-semibold transition-colors hover:border-ink disabled:opacity-50"
                 >
                   Reject
                 </button>
@@ -200,7 +202,7 @@ export function CaseView({ id }: { id: string }) {
           )}
 
           <div>
-            <h2 id="state-h" className="text-sm font-semibold">
+            <h2 id="state-h" className="field-label text-ink">
               End state in each system
             </h2>
             {!c.verification ? (
@@ -229,7 +231,7 @@ export function CaseView({ id }: { id: string }) {
 
           {c.actions.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold">Actions taken</h2>
+              <h2 className="field-label text-ink">Actions taken</h2>
               <ul className="mt-3 space-y-2 text-sm">
                 {c.actions.map((a) => (
                   <li
@@ -282,7 +284,7 @@ function EvidenceCard({ item, animate, cited }: { item: EvidenceItem; animate: b
   return (
     <li id={item.id} className={`scroll-mt-4 rounded-md border border-rule bg-sheet px-3 py-2.5 ${animate ? "anim-evidence" : ""}`}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-        <span className="rounded bg-ink px-1.5 py-0.5 font-medium text-sheet">{item.source === "gmail" ? "Gmail" : item.source === "salesforce" ? "Salesforce" : "Stripe"}</span>
+        <span className="field-label rounded-sm bg-ink px-1.5 py-0.5 text-sheet">{item.source === "gmail" ? "Gmail" : item.source === "salesforce" ? "Salesforce" : "Stripe"}</span>
         <span className="text-muted">{item.kind.replaceAll("_", " ")}</span>
         <Strength value={item.strength} />
         {cited && <span className="font-medium">Cited</span>}
@@ -415,7 +417,7 @@ function Timeline({ events, animateFrom }: { events: TimelineEvent[]; animateFro
             return (
               <li key={it.i} className={`my-3 rounded-md border-2 border-ink bg-sheet p-4 ${fresh ? "anim-verify" : ""}`}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="text-lg font-semibold">{BRANCH_TEXT[e.decision.branch]}</p>
+                  <p className="display text-xl">{BRANCH_TEXT[e.decision.branch]}</p>
                   <p className="num text-sm text-muted">{Math.round(e.decision.confidence * 100)}% confident</p>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full bg-rule" aria-hidden>
@@ -449,9 +451,17 @@ function Timeline({ events, animateFrom }: { events: TimelineEvent[]; animateFro
                   e.passed ? "border-green bg-green-wash" : "border-red bg-red-wash"
                 }`}
               >
-                <p className={`font-medium ${e.passed ? "text-green" : "text-red"}`}>
-                  {e.passed ? (recovered ? "Recovered and confirmed" : "Confirmed") : "Not confirmed"} · {e.action}
-                </p>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className={`font-medium ${e.passed ? "text-green" : "text-red"}`}>
+                    {e.passed ? (recovered ? "Recovered and confirmed" : "Confirmed") : "Not confirmed"} · {e.action}
+                  </p>
+                  <span
+                    className={`stamp ${fresh ? "anim-stamp" : ""} ${e.passed ? "text-green" : "text-red"}`}
+                    style={{ "--stamp-ground": `var(--color-${e.passed ? "green" : "red"}-wash)` } as React.CSSProperties}
+                  >
+                    {e.passed ? "Matches" : "Does not match"}
+                  </span>
+                </div>
                 <p className="num mt-0.5 font-mono text-xs text-ink/80">
                   expected {e.expected}
                   <br />

@@ -220,7 +220,7 @@ function DuplicateSlip() {
             0
           </SlipField>
         </dl>
-        <Stamp kind="mismatch" className="anim-stamp absolute -top-4 right-3 bg-canary" style={{ animationDelay: "1s" }} />
+        <Stamp kind="mismatch" className="anim-stamp absolute bottom-3 right-3 z-20" style={{ animationDelay: "1s" }} />
       </div>
       <figcaption className="mt-5 text-sm leading-relaxed text-muted">
         Synthetic scenario 07. Stripe answered 200 but kept the evidence as a draft. Sentinel read the dispute back, caught the difference, and retried
@@ -265,7 +265,7 @@ function Section({
 
 export default function Page() {
   return (
-    <main id="main" className="text-ink">
+    <main id="main" className="overflow-x-clip text-ink">
       <section aria-labelledby="hero-h" className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid items-center gap-14 py-14 sm:py-20 lg:min-h-[80vh] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           <div>
@@ -395,7 +395,7 @@ export default function Page() {
         </div>
       </Section>
 
-      <Section id="case-h" label="One synthetic case" heading="A 200 response that did nothing—and the readback that caught it.">
+      <Section id="case-h" label="One synthetic case" heading={"A 200 response that did nothing\u2060—and the readback that caught it."}>
         <ol className="mt-10 border-t border-ink/15">
           {CASE_ROWS.map((r) => (
             <li key={r.title} className="grid gap-2 border-b border-rule py-5 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-6">

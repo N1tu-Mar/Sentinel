@@ -45,7 +45,7 @@ export function EvalBoard() {
     setRunning(null);
   }
 
-  if (!board || !tab) return <main className="mx-auto max-w-6xl px-4 py-10 text-sm text-muted sm:px-6">Loading results…</main>;
+  if (!board || !tab) return <main id="main" className="mx-auto max-w-6xl px-4 py-10 text-sm text-muted sm:px-6">Loading results…</main>;
   const { results, metrics: m } = board.environments[tab];
   const canRun = tab === board.current;
   const byKey = new Map(results.map((r) => [r.scenario, r]));
@@ -62,9 +62,10 @@ export function EvalBoard() {
   ];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <main id="main" className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <header className="border-b border-rule pb-5">
-        <h1 className="text-2xl font-semibold tracking-tight">Evaluation</h1>
+        <p className="field-label text-muted">Provider-backed scenarios</p>
+        <h1 className="display mt-1 text-[1.9rem] leading-tight">Evaluation</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
           Each scenario resets the providers, seeds Stripe, Salesforce, Gmail and Slack, runs the agent, then reads every system to check the
           end state. Committed results live in <span className="font-mono text-xs">eval/results.json</span>.
@@ -79,17 +80,17 @@ export function EvalBoard() {
               role="tab"
               aria-selected={tab === env}
               onClick={() => setTab(env)}
-              className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === env ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"}`}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === env ? "border-carbon text-ink" : "border-transparent text-muted hover:text-ink"}`}
             >
               {ENVIRONMENT_TEXT[env]} <span className="num font-normal text-muted">{board.environments[env].results.length}</span>
-              {board.current === env && <span className="ml-2 rounded-full bg-ink px-1.5 py-0.5 text-[10px] font-medium text-sheet">active</span>}
+              {board.current === env && <span className="field-label ml-2 rounded-sm bg-ink px-1.5 py-0.5 text-sheet">active</span>}
             </button>
           ))}
         </div>
         <button
           onClick={() => run(board.scenarios.map((s) => s.key))}
           disabled={!!running || !canRun}
-          className="mb-2 rounded-md bg-ink px-3.5 py-1.5 text-sm font-medium text-sheet hover:bg-ink/85 disabled:opacity-50"
+          className="mb-2 rounded-md bg-ink px-3.5 py-2 text-sm font-semibold text-sheet transition-colors hover:bg-carbon disabled:opacity-50"
         >
           {running ? "Running…" : "Run all scenarios"}
         </button>
@@ -108,8 +109,8 @@ export function EvalBoard() {
       <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
         {figures.map(([label, value, hint]) => (
           <div key={label}>
-            <dt className="text-sm font-medium">{label}</dt>
-            <dd className="num mt-1 text-3xl font-semibold tracking-tight">{value}</dd>
+            <dt className="field-label text-muted">{label}</dt>
+            <dd className="display num mt-2 text-[2rem] leading-none">{value}</dd>
             <dd className="mt-1 text-xs text-muted">{hint}</dd>
           </div>
         ))}

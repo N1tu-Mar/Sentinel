@@ -53,10 +53,11 @@ export function Queue() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <main id="main" className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Open disputes</h1>
+          <p className="field-label text-muted">Dispute queue</p>
+          <h1 className="display mt-1 text-[1.9rem] leading-tight">Open disputes</h1>
           <p className="mt-1 max-w-xl text-sm text-muted">
             Each chargeback is investigated across Stripe, Salesforce and Gmail, answered, and then checked in every system.
           </p>
@@ -65,7 +66,7 @@ export function Queue() {
           <button
             onClick={() => create("sync")}
             disabled={!!busy}
-            className="rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-sheet hover:bg-ink/85 disabled:opacity-50"
+            className="rounded-md bg-ink px-3.5 py-2 text-sm font-semibold text-sheet transition-colors hover:bg-carbon disabled:opacity-50"
           >
             {busy === "sync" ? "Syncing…" : "Sync from Stripe"}
           </button>
@@ -88,7 +89,7 @@ export function Queue() {
             <button
               onClick={() => create("simulate")}
               disabled={!!busy}
-              className="border-l border-rule px-3 py-1.5 text-sm font-medium hover:bg-paper disabled:opacity-50"
+              className="border-l border-rule px-3 py-2 text-sm font-semibold transition-colors hover:bg-paper disabled:opacity-50"
             >
               {busy === "simulate" ? "Creating…" : "Simulate new dispute"}
             </button>

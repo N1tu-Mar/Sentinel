@@ -46,14 +46,15 @@ export function SandboxView() {
   const threads = snap ? Object.values(Object.groupBy(snap.gmail.messages, (m) => m.threadId)) : [];
 
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
+    <main id="main" className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
       <header className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Sandbox</h1>
+          <p className="field-label text-muted">Demo providers</p>
+          <h1 className="display mt-1 text-[1.9rem] leading-tight">Sandbox</h1>
           <p className="mt-1 text-sm text-muted">Salesforce, Gmail and Slack as the agent sees them.</p>
         </div>
         {current && (
-          <span className="rounded-full border border-rule px-2.5 py-0.5 text-xs text-muted">
+          <span className="rounded-sm border border-rule px-2 py-1 text-xs text-muted">
             {current === "local-sandbox" ? "In use for runs" : "Not in use: runs go to Arga twins"}
           </span>
         )}
@@ -69,7 +70,7 @@ export function SandboxView() {
       ) : (
         <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8 [overflow-wrap:anywhere] lg:grid-cols-3">
           <section aria-labelledby="sf-h" className="space-y-3">
-            <h2 id="sf-h" className="text-sm font-semibold">
+            <h2 id="sf-h" className="field-label text-ink">
               Salesforce <span className="num font-normal text-muted">{snap.salesforce.contacts.length} contacts · {snap.salesforce.cases.length} cases</span>
             </h2>
             {snap.salesforce.contacts.length === 0 && <Empty>No contacts yet.</Empty>}
@@ -96,7 +97,7 @@ export function SandboxView() {
           </section>
 
           <section aria-labelledby="gm-h" className="space-y-3">
-            <h2 id="gm-h" className="text-sm font-semibold">
+            <h2 id="gm-h" className="field-label text-ink">
               Gmail <span className="num font-normal text-muted">{threads.length} threads</span>
             </h2>
             {threads.length === 0 && <Empty>No email yet.</Empty>}
@@ -118,7 +119,7 @@ export function SandboxView() {
           </section>
 
           <section aria-labelledby="sl-h" className="space-y-3">
-            <h2 id="sl-h" className="text-sm font-semibold">
+            <h2 id="sl-h" className="field-label text-ink">
               Slack <span className="num font-normal text-muted">{snap.slack.channels.length} channels</span>
             </h2>
             {snap.slack.channels.length === 0 && <Empty>No channels yet.</Empty>}
