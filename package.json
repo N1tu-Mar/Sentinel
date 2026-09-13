@@ -6,22 +6,38 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "twins:check": "tsx scripts/twins-check.ts",
+    "seed": "tsx scripts/seed.ts",
+    "reset": "tsx scripts/reset.ts",
+    "agent": "tsx scripts/agent-cli.ts",
+    "eval": "tsx scripts/eval-cli.ts",
+    "test": "tsx scripts/selftest.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.53",
+    "@slack/web-api": "^8.1.1",
+    "@upstash/redis": "^1.38.4",
+    "@uselemma/tracing": "^7.12.0",
+    "ai": "^7.0.99",
+    "next": "15.5.25",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.25"
+    "stripe": "^22.6.2",
+    "zod": "^4.6.4"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.25",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "tsx": "^4.23.13",
+    "typescript": "^5"
   }
 }
