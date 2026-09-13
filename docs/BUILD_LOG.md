@@ -13,3 +13,4 @@
 15:03 ET — feat: local sandbox; scenario 07 passes end to end (Stripe test mode + sandbox)
 15:08 ET — eval: 7/7 pass (Stripe test mode + local sandbox), 08 skipped
 16:04 ET — feat: hosted sandbox + env:use sandbox|arga
+16:20 ET — feat: per-environment eval results, Sandbox page
