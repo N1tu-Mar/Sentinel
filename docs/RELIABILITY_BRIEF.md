@@ -4,68 +4,83 @@
 
 Sentinel handles a Stripe chargeback for Juniper & Pine Outfitters end to end:
 
-1. **Trigger**: an open dispute (`needs_response` / `warning_needs_response`) is pulled from Stripe (Sync), arrives by signed webhook, or is seeded from a scenario.
-2. **Investigate**: Claude (`claude-sonnet-5`, AI SDK v7 tool loop, max 30 steps) chooses which tools to call.
-3. **Decide**: it records one of five branches (FIGHT, FIGHT_AND_FLAG, ACCEPT, ASK_HUMAN, EXPIRED_OR_BLOCKED), citing evidence ids. The evidence playbook's decision gates and per-reason table are in the system prompt.
-4. **Act**: action tools write to Stripe, Salesforce and Slack, each behind a policy check and an action ledger.
-5. **Verify and recover**: every write is read back; a failed readback is retried once with a new idempotency key, then escalated. A final, LLM-independent verification reads all three systems.
+1. **Trigger**: an open dispute is pulled from Stripe (Sync), seeded from a scenario, or arrives by signed webhook.
+2. **Investigate**: Claude (`claude-sonnet-5`, AI SDK v7 tool loop, max 30 steps) chooses which tools to call. The evidence playbook's decision gates and per-reason table are in the system prompt.
+3. **Decide**: one branch (FIGHT, FIGHT_AND_FLAG, ACCEPT, ASK_HUMAN, EXPIRED_OR_BLOCKED), citing evidence ids that must refer to records a tool returned.
+4. **Act**: Stripe, Salesforce and Slack writes, each behind a policy check and an action ledger.
+5. **Verify and recover**: every write is read back; a failed readback is re-read and retried once with a new idempotency key, then escalated. A final LLM-independent check reads all three systems.
 
-| System | Read | Written |
-| --- | --- | --- |
-| Stripe | dispute, charge, customer, refunds, other disputes (created in 90 days, joined on charge.customer) | submit evidence, close (accept) dispute, cancel subscription |
-| Salesforce | contact by email (`LTV_CENTS`, `PRIOR_DISPUTES_90D`, `RISK_FLAG` Description lines), cases from 180 days (delivery = `TRACKING:` + `DELIVERED:` lines) | `RISK_FLAG: friendly_fraud`, risk / "Evidence needed" / "Dispute accepted" cases |
-| Gmail | threads `from:E OR to:E after:…`, decoded bodies with quoted replies stripped | — |
-| Slack | channel history (ts readback) | #disputes, #risk, #dispute-approvals posts |
+| System | Read | Written | Backend for results |
+| --- | --- | --- | --- |
+| Stripe | dispute, charge, customer, refunds, other disputes (90 days, joined on charge.customer) | submit evidence, close dispute, cancel subscription | Real Stripe test mode |
+| Salesforce | contact (`RISK_FLAG`, `LTV_CENTS` Description lines), cases (delivery = `TRACKING:` + `DELIVERED:`) | risk flag, risk / "Evidence needed" / "Dispute accepted" cases | Arga twin or Sentinel sandbox |
+| Gmail | threads to/from the customer, decoded, quoted replies stripped | — | Arga twin or Sentinel sandbox |
+| Slack | channel history (ts readback) | #disputes, #risk, #dispute-approvals | Arga twin or Sentinel sandbox |
+
+**Why the split.** Kill Check #1 failed on the Arga Stripe twin. Dispute test cards, scenario prompts and `/_twin/seed` all created no dispute, and `/v1/charges/{id}/dispute` returned a stub that `/v1/disputes` never lists (`fixtures/live/`). Stripe therefore runs on real test mode, as the brief's fallback prescribes. The Arga free plan allows one twin per run for 10 minutes, and this account's monthly runs were used up during the build. Salesforce, Gmail and Slack therefore also run against Sentinel's sandbox (`src/sandbox/server.ts`), which serves the API subset the adapters call with the shapes observed on live twins. Every result is labeled with its environment and stored separately.
 
 ## 2. How we know it works
 
-Three independent layers:
+1. **Per-action readback** (`src/agent/idempotency.ts`). After a write: wait 400 ms, then read up to 3 times, 1 s apart. The tool returns `{ ok, verified, attempt, observed }`, e.g. `dispute status = needs_response, submission_count = 0, expected status under_review, submission_count = 1`. Proofs: evidence ⇒ `under_review` and `submission_count == 1`; accept ⇒ `lost`; flag ⇒ re-read `RISK_FLAG` plus exactly one risk case; case ⇒ exactly one with that subject; Slack ⇒ history returns the posted `ts`.
+2. **Final postconditions** (`src/agent/verify.ts`). After the loop, regardless of what the model said, Sentinel reads Stripe, Salesforce and Slack and checks the end state the decision implies. `resolved` only if every check passes.
+3. **External eval assertions** (`src/eval/assertions.ts`). The harness reads provider state itself and evaluates every `assertions` and `forbidden_effects` entry of the scenario fixture, plus branch, final status and the agent's own verdict.
 
-1. **Per-action readback** (`src/agent/idempotency.ts`). After a write: wait 400 ms, read the provider up to 3 times, 1 s apart. The tool returns `{ ok, verified, attempt, observed }`, e.g. `dispute status = needs_response, submission_count = 0, evidence populated, expected status under_review, submission_count = 1, evidence populated`. A 200 is never success on its own. Proofs: evidence submit ⇒ `under_review` and `submission_count == 1`; accept ⇒ `lost`; Salesforce flag ⇒ re-read `RISK_FLAG` line plus exactly one risk case; case create ⇒ exactly one case with that subject; Slack ⇒ `conversations.history oldest=ts inclusive limit=1` returns the posted ts, and exactly one message for the dispute.
-2. **Final postconditions** (`src/agent/verify.ts`). After the loop, regardless of what the model said, Sentinel reads Stripe, Salesforce and Slack and checks the end state the recorded decision implies. A case is `resolved` only if every check passes; otherwise `needs_attention`.
-3. **External eval assertions** (`src/eval/assertions.ts`). The harness reads provider state itself (not the case store) and evaluates every `assertions` entry and every `forbidden_effects` entry from the scenario fixture, plus branch, final status and verification.
+**Ledger / idempotency.** One entry per case per action. Verified actions are never re-sent. Keys are `sentinel:{dispute}:{action}:{attempt}`; a retry uses a new key because reusing one replays the first response. Before a retry Sentinel re-reads, so a late-landing write is recorded as done. Slack and Salesforce look before writing.
 
-**Ledger / idempotency.** One ledger entry per case per action (plus target, e.g. Slack channel). A verified action is never re-sent: a duplicate model call returns the stored observation. Keys are `sentinel:{dispute}:{action}:{attempt}`; a retry gets a new key because reusing one replays the first response, including a 200 that changed nothing. Before a retry, Sentinel re-reads: if the first attempt landed late it is recorded as done instead of repeated. Slack and Salesforce have no idempotency keys, so they always look before writing.
-
-**Policy in code** (`src/agent/policy.ts`), against live provider state read right before each write: no action before `record_decision`; Stripe writes only while status is `needs_response`/`warning_needs_response`, `past_due` is false and `due_by` is in the future; submit only on FIGHT branches and only with `submission_count == 0`; accept only on ACCEPT and, above **$200 (20,000 cents)**, only after recorded human approval; flag only on FIGHT_AND_FLAG with **≥ 2 other disputes in 90 days**; **max 2 attempts** per action, never a third. Evidence respects Stripe's limits (20,000 chars per field, 150,000 total); quoted emails go in `uncategorized_text` because `customer_communication` is a file field. `record_evidence` only accepts refs a tool actually returned in this run.
+**Policy in code** (`src/agent/policy.ts`), against live provider state read right before each write:
+- No action before `record_decision`.
+- Stripe writes only while status is `needs_response`/`warning_needs_response`, `past_due` is false and `due_by` is in the future.
+- Submit only on FIGHT branches with `submission_count == 0`.
+- Accept only on ACCEPT, and above **$200** only after recorded human approval.
+- Flag only on FIGHT_AND_FLAG with **≥ 2 other disputes in 90 days**.
+- **Max 2 attempts** per action.
+- Evidence respects Stripe's 20,000/150,000-character limits; quoted emails go in `uncategorized_text`.
 
 ## 3. Failure handling
 
-| Chaos mode | Injected | Expected behaviour |
+| Chaos mode | Injected | Behaviour |
 | --- | --- | --- |
-| `drop_submit_once` | First evidence update is sent without `submit=true` (saved as draft, HTTP 200) | Readback sees `needs_response`, `submission_count 0`; the agent diagnoses, retries; Sentinel re-reads, sends with key `…:submit_evidence:2`; readback confirms `under_review`, count 1 |
-| `stripe_500_once` | First dispute readback throws a synthetic 500 | Readback loop reads again; timeline shows the recovery |
-| `slack_timeout_once` | Post request goes out but the client stops waiting after 100 ms | Readback finds the delivered message; no second post |
+| `drop_submit_once` | First evidence update sent without `submit=true` (draft, HTTP 200) | Readback sees `needs_response`, 0 submissions; agent diagnoses and retries; Sentinel re-reads and sends key `…:submit_evidence:2`; readback confirms `under_review`, 1 submission |
+| `stripe_500_once` | First dispute readback throws a synthetic 500 | Readback loop reads again |
+| `slack_timeout_once` | Post goes out but the client stops waiting after 100 ms | Readback finds the delivered message; no second post |
 
-Every injection emits a visible `chaos` event. Every readback result and retry is also recorded as an explicit Lemma span (`verify.*` with `passed`, `recovery.retry` with old and new keys). Recovery rate comes from `eval/results.json`.
+Live-provider issues found and handled during the build:
+- Stripe test mode returns `429 lock_timeout` on a just-created dispute; the SDK retries those.
+- The Salesforce twin rejects `Contact.Description` in SOQL but returns it on the record, so contacts are read by id.
+- The Salesforce twin returns zero rows for `LAST_N_DAYS` instead of an error, so the date window is applied in code.
+- The Gmail twin stamps inserted mail with its own clock, so dates come from the Date header.
 
 ## 4. Evaluation
 
-| Fixture | Scenario | Chaos | Expected |
+Per scenario: reset (Arga `twins.reset` or sandbox reset) → seed from `fixtures/scenarios/` → ingest → run (approve 04) → assert.
+
+| # | Scenario | Expected | Sandbox result |
 | --- | --- | --- | --- |
-| 01 | fight_receipt_confirmed ($89) | none | FIGHT |
-| 02 | fight_delivery_and_email ($145) | none | FIGHT |
-| 03 | accept_under_threshold_auto ($49) | none | ACCEPT |
-| 04 | accept_over_threshold_needs_approval ($340) | none | ACCEPT after approval |
-| 05 | friendly_fraud_repeat_disputer ($120) | none | FIGHT_AND_FLAG |
-| 06 | ask_human_missing_evidence ($75) | none | ASK_HUMAN |
-| 07 | injected_silent_submit_failure ($96) | drop_submit_once | FIGHT, 2 submit attempts |
-| 08 | past_due_must_not_submit ($169) | none | EXPIRED_OR_BLOCKED |
+| 01 | Customer confirmed delivery | FIGHT | pass |
+| 02 | Delivery record + customer email | FIGHT | pass |
+| 03 | Canceled before charge, $49 | ACCEPT | pass |
+| 04 | Canceled before charge, $340 | ACCEPT after approval | pass |
+| 05 | Repeat disputer | FIGHT_AND_FLAG | pass |
+| 06 | Missing evidence | ASK_HUMAN | pass |
+| 07 | Evidence saved as draft (injected) | FIGHT, 2 submit attempts | pass |
+| 08 | Deadline passed | EXPIRED_OR_BLOCKED | skipped: Stripe test mode cannot seed a past deadline |
 
-Per scenario: `arga.twins.reset(runId)` → seed through the APIs (or locate prompt-seeded data by customer email) → ingest → run (approve for 04) → assert. Metrics: task success, decision accuracy, false-action rate, constraint-violation rate, recovery rate, state consistency, mean provider calls and wall time. `npm run eval` writes `eval/results.json` and `eval/results.md`; the numbers are whatever that run produced.
+**Stripe test mode + Sentinel sandbox:** task success 7/7, decision accuracy 100%, false-action rate 0%, constraint-violation rate 0%, recovery 100% (1 chaos scenario), state consistency 100%, mean 31 provider calls and 44 s per scenario (`eval/results.json`). Scenario 01 also passes on the deployed app against the hosted sandbox.
 
-`npm test` checks adapters against the fixture payloads, the policy gates, the ledger and chaos recovery, the postconditions, and that every fixture assertion and forbidden effect maps to a real check — with no provider or model.
+**Stripe test mode + Arga twins:** full eval not run (quota). Scenario 07 ran once end to end on live twins (`docs/evidence/scenario-07-live-run.log`). The dropped submit was caught, retried with key `:2` and verified, and the Slack post was confirmed by ts. The final check then failed on the Salesforce SOQL quirk above, which is now fixed.
 
-## 5. What we saw in Lemma
+`npm test` covers the policy gates (including past-due), the ledger and chaos recovery, the postconditions, every fixture assertion mapping, and the adapters over HTTP.
 
-Every run sends one trace named `sentinel.dispute_run` (thread id = dispute id) via `vercelAI()` from `@uselemma/tracing`: model calls and tool executions, plus the verification and recovery spans above. The trace id is stored on the case and shown on the case page. Screenshot of scenario 07's trace: to be captured once `LEMMA_API_KEY` is configured.
+## 5. What we see in Lemma
+
+Every run is one trace named `sentinel.dispute_run`, with the dispute id as thread id, created via `vercelAI()` on a `lemma.trace()` handle. It records model generations, tool calls, and explicit `verify.<action>` spans with `passed` plus `recovery.retry` spans carrying the old and new idempotency keys, so scenario 07's caught failure and fix are visible as spans. Delivery is verified: `npm run lemma:smoke` logs `trace sent` (HTTP 201) with the expected span count. The trace id is shown on each case.
 
 ## 6. Known limitations
 
-- Evidence is text only: no file uploads, so file fields (`shipping_documentation`, `customer_communication`) stay empty.
-- Approval happens in Sentinel's UI; Slack is notify-only (twin interactivity is undocumented).
-- How the Stripe twin creates disputes is undocumented; the seeder tries test payment methods and cards and records which worked. Without one, Stripe runs on real test mode (hybrid).
-- Under API seeding, scenario 08 cannot be seeded (no way to backdate `due_by`) and is reported as skipped. The past-due policy gate is covered by `npm test`.
-- Without Upstash Redis the case store is in-memory per process; on Vercel that state does not survive across function instances.
-- `stripe_500_once` is injected at Sentinel's readback, not by the twin.
-- Final-verification checks run after the model call ends, so they are on the case and timeline but not in the Lemma trace.
+- The full Arga-twin evaluation has not run (free-plan quota). The sandbox results are labeled as such and never shown as twin results.
+- Stripe runs on real test mode because the twin cannot create disputes; scenario 08 cannot be seeded there.
+- The hosted sandbox stores each system as one Redis value, so concurrent runs can overwrite each other. One run at a time is safe.
+- Evidence is text only (no file uploads). Approval happens in Sentinel's UI; Slack is notify-only.
+- The final cross-system check runs after the Lemma trace is sent, so it is on the case timeline but not in the trace.
+- `stripe_500_once` is injected at Sentinel's readback, not by a provider.
+- The deployed app has no authentication, by design for the demo, so anyone with the URL can start test-mode runs.
