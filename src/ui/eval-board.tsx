@@ -110,7 +110,7 @@ export function EvalBoard() {
         {figures.map(([label, value, hint]) => (
           <div key={label}>
             <dt className="field-label text-muted">{label}</dt>
-            <dd className="display num mt-2 text-[2rem] leading-none">{value}</dd>
+            <dd className={`display num mt-2 text-[2rem] leading-none ${value === "—" ? "text-rule" : ""}`}>{value}</dd>
             <dd className="mt-1 text-xs text-muted">{hint}</dd>
           </div>
         ))}
