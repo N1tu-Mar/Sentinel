@@ -107,7 +107,7 @@ export function Queue() {
               <li key={c.id}>
                 <Link
                   href={`/cases/${c.id}`}
-                  className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-2 py-4 hover:bg-sheet sm:grid-cols-[1.3fr_0.7fr_1.4fr_1fr_auto]"
+                  className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-2 py-4 hover:bg-sheet sm:grid-cols-[1.3fr_0.7fr_1.4fr_1fr_10.5rem]"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{c.customer?.name || c.dispute.customerId}</span>
