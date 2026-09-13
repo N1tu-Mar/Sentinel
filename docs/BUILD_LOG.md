@@ -6,3 +6,4 @@
 13:21 ET — ui: queue, case view, eval scoreboard; api routes; docs
 13:23 ET — docs: README, reliability brief, demo script, arga guide; ui fixes
 13:39 ET — feat: align with research data contract and fixtures
+13:53 ET — feat: Lemma tracing verified with smoke trace; Vercel project linked and deployed
